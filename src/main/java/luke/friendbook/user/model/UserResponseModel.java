@@ -7,9 +7,10 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Data
-public class UserResponseDto {
+public class UserResponseModel {
     private String username;
     private String email;
     private String password;
     private boolean isActive;
+    private boolean isLocked;
 }

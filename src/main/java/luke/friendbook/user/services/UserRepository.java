@@ -1,18 +1,20 @@
 package luke.friendbook.user.services;
 
 import luke.friendbook.user.model.User;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.persistence.EntityManager;
-import javax.persistence.NoResultException;
-import javax.persistence.PersistenceContext;
-import javax.persistence.TypedQuery;
-import java.util.List;
-import java.util.Optional;
+import javax.persistence.*;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Repository
-public class UserRepository implements IUserRepository {
+public class UserRepository implements IUserRepository, UserDetailsService {
 
     @PersistenceContext
     private EntityManager entityManager;
@@ -30,14 +32,18 @@ public class UserRepository implements IUserRepository {
     @Override
     public List<User> findByUsername(String username) {
         final String query = "SELECT u FROM User u WHERE u.username = ?1";
-        TypedQuery<User> userTypedQuery = entityManager.createQuery(query, User.class);
-        userTypedQuery.setParameter(1, username);
+        EntityGraph<User> entityGraph = entityManager.createEntityGraph(User.class);
+        entityGraph.addAttributeNodes("roles");
+
+        TypedQuery<User> userTypedQuery = entityManager.createQuery(query, User.class)
+                .setParameter(1, username)
+                .setHint("javax.persistence.loadgraph", entityGraph);
         return userTypedQuery.getResultList();
     }
 
     @Override
     public Optional<User> findByEmail(String email) {
-        final String query = "SELECT u FROM User u WHERE u.email = ?1";
+        final String query = "SELECT u FROM User u JOIN FETCH u.roles WHERE u.email = ?1";
         TypedQuery<User> userTypedQuery = entityManager.createQuery(query, User.class);
         userTypedQuery.setParameter(1, email);
         User user;
@@ -72,7 +78,6 @@ public class UserRepository implements IUserRepository {
             fetchedUser.setUsername(user.getUsername());
             fetchedUser.setEmail(user.getEmail());
             fetchedUser.setPassword(user.getPassword());
-            fetchedUser.setRole(user.getRole());
         }
         return fetchedUser;
     }
@@ -87,6 +92,29 @@ public class UserRepository implements IUserRepository {
         }
 
         return false;
+    }
+
+    @Override
+    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
+        User user = this.findByEmail(email)
+                .orElseThrow(() -> new UsernameNotFoundException("Nie znaleziono użytkownika z emailem " + email));
+
+        return new org.springframework.security.core.userdetails
+                .User(
+                user.getEmail(),
+                user.getPassword(),
+                user.isActive(),
+                true,
+                true,
+                !user.isLocked(),
+                this.getAuthorities(user));
+    }
+
+    private Collection<GrantedAuthority> getAuthorities(User user) {
+        return user.getRoles()
+                .stream()
+                .map(role -> new SimpleGrantedAuthority(role.getRoleType().toString()))
+                .collect(Collectors.toSet());
     }
 }
 

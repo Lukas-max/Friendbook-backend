@@ -19,6 +19,11 @@ public class CorsConfig implements WebMvcConfigurer {
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.setAllowedOrigins(List.of("http://localhost:4200"));
         configuration.setAllowCredentials(true);
+        configuration.setExposedHeaders(List.of(
+                "jwt-token",
+                "roles",
+                "jwt-expiration",
+                "user"));
         configuration.setAllowedHeaders(Arrays.asList(
                 "Access-Control-Allow-Headers",
                 "Access-Control-Allow-Origin",

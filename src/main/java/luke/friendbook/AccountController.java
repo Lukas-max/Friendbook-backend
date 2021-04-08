@@ -1,18 +1,14 @@
 package luke.friendbook;
 
-import luke.friendbook.user.model.User;
-import luke.friendbook.user.model.UserRequestDto;
-import luke.friendbook.user.model.UserResponseDto;
+import luke.friendbook.user.model.UserRequestModel;
+import luke.friendbook.user.model.UserResponseModel;
 import luke.friendbook.user.services.IUserService;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/account")
-public class AccountController {
+public class AccountController{
 
     private final IUserService userService;
 
@@ -20,9 +16,14 @@ public class AccountController {
         this.userService = userService;
     }
 
+    @GetMapping("/email")
+    public ResponseEntity<Boolean> checkIfEmailExists(@RequestParam String email) {
+        return ResponseEntity.ok().body(userService.doesEmailExist(email));
+    }
+
     @PostMapping("/register")
-    public ResponseEntity<UserResponseDto> register(@RequestBody UserRequestDto userRequestDto) {
-        UserResponseDto savedUser = userService.register(userRequestDto);
+    public ResponseEntity<UserResponseModel> register(@RequestBody UserRequestModel userRequestModel) {
+        UserResponseModel savedUser = userService.register(userRequestModel);
         return ResponseEntity.ok().body(savedUser);
     }
 

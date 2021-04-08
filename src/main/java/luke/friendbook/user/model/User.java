@@ -7,6 +7,8 @@ import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
 import java.io.Serializable;
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
 @Table(name = "users")
@@ -34,9 +36,15 @@ public class User implements Serializable {
     @Column(name = "active", nullable = false)
     private boolean isActive;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "role", nullable = false)
-    private Role role;
+    @Column(name = "locked", nullable = false)
+    private boolean isLocked;
+
+    @ManyToMany
+    @JoinTable(name = "user_roles",
+            joinColumns = @JoinColumn(name = "user_id"),
+            inverseJoinColumns = @JoinColumn(name = "role_id"))
+    private Set<Role> roles = new HashSet<>();
+
 
     public User(User user) {
         this.userId = user.userId;
@@ -44,7 +52,8 @@ public class User implements Serializable {
         this.email = user.email;
         this.password = user.password;
         this.isActive = user.isActive;
-        this.role = user.role;
+        this.isLocked = user.isLocked;
+        this.roles = new HashSet<>(user.getRoles());
     }
 }
 

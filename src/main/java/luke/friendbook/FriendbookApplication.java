@@ -1,12 +1,15 @@
 package luke.friendbook;
 
 import luke.friendbook.user.model.Role;
+import luke.friendbook.user.model.RoleType;
 import luke.friendbook.user.model.User;
+import luke.friendbook.user.services.RoleRepository;
 import luke.friendbook.user.services.UserRepository;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.context.event.EventListener;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -15,9 +18,13 @@ import java.util.Set;
 public class FriendbookApplication {
 
     private final UserRepository userDao;
+    private final RoleRepository roleRepository;
+    private final PasswordEncoder passwordEncoder;
 
-    public FriendbookApplication(UserRepository userDao) {
+    public FriendbookApplication(UserRepository userDao, RoleRepository roleRepository, PasswordEncoder passwordEncoder) {
         this.userDao = userDao;
+        this.roleRepository = roleRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     public static void main(String[] args) {
@@ -26,31 +33,43 @@ public class FriendbookApplication {
 
     @EventListener
     public void onApplicationContextInitialization(ContextRefreshedEvent event) {
+        Role role = new Role();
+        role.setRoleType(RoleType.USER);
+        roleRepository.save(role);
+
+        Role adminRole = new Role();
+        role.setRoleType(RoleType.ADMIN);
+        roleRepository.save(adminRole);
+
+
         Set<User> users = new HashSet<>();
         User user1 = User.builder()
-                .username("Marian")
-                .password("user")
-                .email("marian@o2.pl")
-                .role(Role.USER)
+                .username("marian")
+                .password(passwordEncoder.encode("user"))
+                .email("majl")
                 .isActive(true)
+                .isLocked(false)
+                .roles(Set.of(role))
                 .build();
         users.add(user1);
 
         User user2 = User.builder()
-                .username("Jarogniew")
-                .password("user")
+                .username("jarogniew")
+                .password(passwordEncoder.encode("user"))
                 .email("jarogniew@o2.pl")
-                .role(Role.USER)
                 .isActive(true)
+                .isLocked(false)
+                .roles(Set.of(role))
                 .build();
         users.add(user2);
 
         User user3 = User.builder()
-                .username("Matylda")
-                .password("user")
+                .username("matylda")
+                .password(passwordEncoder.encode("user"))
                 .email("matylda@o2.pl")
-                .role(Role.USER)
                 .isActive(true)
+                .isLocked(true)
+                .roles(Set.of(role))
                 .build();
         users.add(user3);
 

@@ -19,6 +19,7 @@ public class UserService implements IUserService {
 
     private final IUserRepository userDao;
     private final IRegistrationTokenRepository registrationTokenRepository;
+    private final IRoleRepository roleRepository;
     private final TemplateEngine templateEngine;
     private final IMailSender mailSender;
     private final Logger log = LoggerFactory.getLogger(this.getClass());
@@ -30,19 +31,22 @@ public class UserService implements IUserService {
     public UserService(
             IUserRepository userDao,
             IRegistrationTokenRepository registrationTokenRepository,
+            IRoleRepository roleRepository,
             TemplateEngine templateEngine,
             IMailSender mailSender) {
         this.userDao = userDao;
         this.registrationTokenRepository = registrationTokenRepository;
+        this.roleRepository = roleRepository;
         this.templateEngine = templateEngine;
         this.mailSender = mailSender;
     }
 
 
     @Override
-    public UserResponseDto register(UserRequestDto userRequestDto) {
-        User user = new ModelMapper().map(userRequestDto, User.class);
-        user.setRole(Role.USER);
+    public UserResponseModel register(UserRequestModel userRequestModel) {
+        Role role = getUserRole(RoleType.USER);
+        User user = new ModelMapper().map(userRequestModel, User.class);
+        user.getRoles().add(role);
         validateRegistration(user);
         MailSetting mailSetting = mailMode.equals("ON") ? MailSetting.ON : MailSetting.OFF;
 
@@ -52,7 +56,7 @@ public class UserService implements IUserService {
             RegistrationToken registrationToken = createRegistrationToken(user);
             sendRegistrationToken(user, registrationToken);
         }
-        return new ModelMapper().map(user, UserResponseDto.class);
+        return new ModelMapper().map(user, UserResponseModel.class);
     }
 
     private void validateRegistration(User user) {
@@ -102,12 +106,23 @@ public class UserService implements IUserService {
         }
     }
 
+
     private RegistrationToken findToken(String token) {
         return registrationTokenRepository.findByToken(token).orElseThrow(() -> {
             throw new RegisterTokenNotFoundException("Nie znaleziono w bazie tokena.");
         });
     }
 
+    @Override
+    public boolean doesEmailExist(String email) {
+        return userDao.findByEmail(email).isPresent();
+    }
+
+    private Role getUserRole(RoleType roleType){
+        return roleRepository.findByRoleType(roleType)
+                .orElseThrow(() -> new RoleNotFoundException("Nie znaleziono roli użytkownika w trakcie tworzenia " +
+                        "nowego użytkownika. Błąd serwera."));
+    }
 }
 
 

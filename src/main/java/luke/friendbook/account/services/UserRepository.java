@@ -1,6 +1,6 @@
-package luke.friendbook.user.services;
+package luke.friendbook.account.services;
 
-import luke.friendbook.user.model.User;
+import luke.friendbook.account.model.User;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;

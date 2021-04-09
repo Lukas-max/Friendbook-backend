@@ -1,7 +1,7 @@
 package luke.friendbook.mailClient;
 
 import luke.friendbook.exception.MailMessageFailureException;
-import luke.friendbook.user.model.User;
+import luke.friendbook.account.model.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.mail.javamail.JavaMailSender;

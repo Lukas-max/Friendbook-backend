@@ -1,6 +1,6 @@
 package luke.friendbook.mailClient;
 
-import luke.friendbook.user.model.User;
+import luke.friendbook.account.model.User;
 
 public interface IMailSender {
 

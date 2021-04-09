@@ -1,5 +1,6 @@
 package luke.friendbook.security;
 
+import luke.friendbook.account.services.UserRepository;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
@@ -16,23 +17,29 @@ public class AppSecurity extends WebSecurityConfigurerAdapter {
     private final UserDetailsService userDetailsService;
     private final JTokenUtility tokenUtility;
 
-    public AppSecurity(@Qualifier("userRepository") UserDetailsService userDetailsService, JTokenUtility tokenUtility) {
+    public AppSecurity(
+            @Qualifier("userRepository") UserDetailsService userDetailsService,
+                       JTokenUtility tokenUtility,
+                       UserRepository userRepository) {
         this.userDetailsService = userDetailsService;
         this.tokenUtility = tokenUtility;
     }
 
     @Override
     protected void configure(AuthenticationManagerBuilder auth) throws Exception {
-        auth.userDetailsService(userDetailsService).passwordEncoder(this.passwordEncoder());
+        auth.userDetailsService(userDetailsService)
+                .passwordEncoder(this.passwordEncoder());
+        auth.eraseCredentials(false);
     }
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         http.csrf().disable()
                 .cors().and()
+                .authorizeRequests().anyRequest().permitAll()
+                .and()
                 .addFilter(getAuthenticationFilter())
-                .addFilter(getAuthorizationFilter())
-                .authorizeRequests().anyRequest().permitAll();
+                .addFilter(getAuthorizationFilter());
     }
 
     @Bean

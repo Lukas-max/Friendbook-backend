@@ -1,7 +1,7 @@
-package luke.friendbook.user.services;
+package luke.friendbook.account.services;
 
-import luke.friendbook.user.model.UserRequestModel;
-import luke.friendbook.user.model.UserResponseModel;
+import luke.friendbook.account.model.UserResponseModel;
+import luke.friendbook.account.model.UserRequestModel;
 
 
 public interface IUserService {

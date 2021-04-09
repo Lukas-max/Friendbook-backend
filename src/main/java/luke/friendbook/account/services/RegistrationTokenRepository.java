@@ -1,6 +1,6 @@
-package luke.friendbook.user.services;
+package luke.friendbook.account.services;
 
-import luke.friendbook.user.model.RegistrationToken;
+import luke.friendbook.account.model.RegistrationToken;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 

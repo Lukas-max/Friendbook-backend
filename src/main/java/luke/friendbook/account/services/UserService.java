@@ -1,9 +1,10 @@
-package luke.friendbook.user.services;
+package luke.friendbook.account.services;
 
+import luke.friendbook.account.model.*;
 import luke.friendbook.exception.*;
 import luke.friendbook.mailClient.IMailSender;
 import luke.friendbook.mailClient.MailSetting;
-import luke.friendbook.user.model.*;
+import luke.friendbook.account.user.model.*;
 import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

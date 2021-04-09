@@ -1,8 +1,8 @@
-package luke.friendbook.user.services;
+package luke.friendbook.account.services;
 
 import luke.friendbook.Repository;
-import luke.friendbook.user.model.Role;
-import luke.friendbook.user.model.RoleType;
+import luke.friendbook.account.model.Role;
+import luke.friendbook.account.model.RoleType;
 
 import java.util.Optional;
 

@@ -1,7 +1,7 @@
-package luke.friendbook.user.services;
+package luke.friendbook.account.services;
 
-import luke.friendbook.user.model.Role;
-import luke.friendbook.user.model.RoleType;
+import luke.friendbook.account.model.Role;
+import luke.friendbook.account.model.RoleType;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 

@@ -1,4 +1,4 @@
-package luke.friendbook.user.model;
+package luke.friendbook.account.model;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

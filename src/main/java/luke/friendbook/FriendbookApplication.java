@@ -1,10 +1,10 @@
 package luke.friendbook;
 
-import luke.friendbook.user.model.Role;
-import luke.friendbook.user.model.RoleType;
-import luke.friendbook.user.model.User;
-import luke.friendbook.user.services.RoleRepository;
-import luke.friendbook.user.services.UserRepository;
+import luke.friendbook.account.model.Role;
+import luke.friendbook.account.model.RoleType;
+import luke.friendbook.account.model.User;
+import luke.friendbook.account.services.RoleRepository;
+import luke.friendbook.account.services.UserRepository;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.event.ContextRefreshedEvent;
@@ -38,7 +38,7 @@ public class FriendbookApplication {
         roleRepository.save(role);
 
         Role adminRole = new Role();
-        role.setRoleType(RoleType.ADMIN);
+        adminRole.setRoleType(RoleType.ADMIN);
         roleRepository.save(adminRole);
 
 
@@ -46,7 +46,7 @@ public class FriendbookApplication {
         User user1 = User.builder()
                 .username("marian")
                 .password(passwordEncoder.encode("user"))
-                .email("majl")
+                .email("m")
                 .isActive(true)
                 .isLocked(false)
                 .roles(Set.of(role))

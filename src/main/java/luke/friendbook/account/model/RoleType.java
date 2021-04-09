@@ -1,4 +1,4 @@
-package luke.friendbook.user.model;
+package luke.friendbook.account.model;
 
 public enum RoleType {
     ADMIN, USER

@@ -1,9 +1,12 @@
-package luke.friendbook;
+package luke.friendbook.account;
 
-import luke.friendbook.user.model.UserRequestModel;
-import luke.friendbook.user.model.UserResponseModel;
-import luke.friendbook.user.services.IUserService;
+import luke.friendbook.account.model.UserResponseModel;
+import luke.friendbook.account.services.IUserService;
+import luke.friendbook.account.model.UserRequestModel;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -14,6 +17,17 @@ public class AccountController{
 
     public AccountController(IUserService userService) {
         this.userService = userService;
+    }
+
+    @GetMapping
+    public ResponseEntity<?> test() {
+        SecurityContext context = SecurityContextHolder.getContext();
+        Authentication authentication = context.getAuthentication();
+        System.out.println("getName(): " + authentication.getName());
+        System.out.println("isAuthenticated: " +  authentication.isAuthenticated());
+        System.out.println("getPrincipal: " + authentication.getPrincipal());
+        System.out.println("roles: " +  authentication.getAuthorities().toString());
+        return ResponseEntity.ok().build();
     }
 
     @GetMapping("/email")

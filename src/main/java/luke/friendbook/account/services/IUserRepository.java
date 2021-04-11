@@ -11,4 +11,6 @@ public interface IUserRepository extends Repository<User> {
     List<User> findByUsername(String username);
 
     Optional<User> findByEmail(String email);
+
+    Optional<User> findByUuid(String userUUID);
 }

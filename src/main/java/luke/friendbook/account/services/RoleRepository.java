@@ -2,6 +2,7 @@ package luke.friendbook.account.services;
 
 import luke.friendbook.account.model.Role;
 import luke.friendbook.account.model.RoleType;
+import luke.friendbook.account.model.User;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -9,6 +10,7 @@ import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 import javax.persistence.PersistenceContext;
 import javax.persistence.TypedQuery;
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -17,6 +19,13 @@ public class RoleRepository implements IRoleRepository{
     @PersistenceContext
     private EntityManager entityManager;
 
+
+    @Override
+    public List<Role> findAll() {
+        final String query = "SELECT r FROM Role r";
+        TypedQuery<Role> userTypedQuery = entityManager.createQuery(query, Role.class);
+        return userTypedQuery.getResultList();
+    }
 
     @Override
     public Optional<Role> findById(Long id) {

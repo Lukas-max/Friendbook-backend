@@ -8,6 +8,7 @@ import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 import javax.persistence.PersistenceContext;
 import javax.persistence.TypedQuery;
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -15,6 +16,13 @@ public class RegistrationTokenRepository implements IRegistrationTokenRepository
 
     @PersistenceContext
     private EntityManager entityManager;
+
+    @Override
+    public List<RegistrationToken> findAll() {
+        final String query = "SELECT r FROM RegistrationToken r";
+        TypedQuery<RegistrationToken> userTypedQuery = entityManager.createQuery(query, RegistrationToken.class);
+        return userTypedQuery.getResultList();
+    }
 
     @Override
     public Optional<RegistrationToken> findById(Long registrationTokenId) {

@@ -9,8 +9,7 @@ import lombok.NoArgsConstructor;
 @Data
 public class UserResponseModel {
     private String username;
+    private String userUUID;
     private String email;
     private String password;
-    private boolean isActive;
-    private boolean isLocked;
 }

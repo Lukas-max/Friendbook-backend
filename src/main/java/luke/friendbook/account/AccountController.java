@@ -1,7 +1,7 @@
 package luke.friendbook.account;
 
 import luke.friendbook.account.model.UserResponseModel;
-import luke.friendbook.account.services.IUserService;
+import luke.friendbook.account.services.IAccountService;
 import luke.friendbook.account.model.UserRequestModel;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -13,9 +13,9 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/account")
 public class AccountController{
 
-    private final IUserService userService;
+    private final IAccountService userService;
 
-    public AccountController(IUserService userService) {
+    public AccountController(IAccountService userService) {
         this.userService = userService;
     }
 

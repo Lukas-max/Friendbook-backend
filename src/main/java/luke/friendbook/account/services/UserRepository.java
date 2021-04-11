@@ -1,6 +1,7 @@
 package luke.friendbook.account.services;
 
 import luke.friendbook.account.model.User;
+import luke.friendbook.security.model.SecurityContextUser;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -19,6 +20,13 @@ public class UserRepository implements IUserRepository, UserDetailsService {
     @PersistenceContext
     private EntityManager entityManager;
 
+
+    @Override
+    public List<User> findAll() {
+        final String query = "SELECT u FROM User u";
+        TypedQuery<User> userTypedQuery = entityManager.createQuery(query, User.class);
+        return userTypedQuery.getResultList();
+    }
 
     @Override
     public Optional<User> findById(Long userId) {
@@ -46,6 +54,21 @@ public class UserRepository implements IUserRepository, UserDetailsService {
         final String query = "SELECT u FROM User u JOIN FETCH u.roles WHERE u.email = ?1";
         TypedQuery<User> userTypedQuery = entityManager.createQuery(query, User.class);
         userTypedQuery.setParameter(1, email);
+        User user;
+
+        try {
+            user = userTypedQuery.getSingleResult();
+        } catch (NoResultException e) {
+            return Optional.empty();
+        }
+        return Optional.of(user);
+    }
+
+    @Override
+    public Optional<User> findByUuid(String userUUID) {
+        final String query = "SELECT u FROM User u WHERE u.userUUID = ?1";
+        TypedQuery<User> userTypedQuery = entityManager.createQuery(query, User.class);
+        userTypedQuery.setParameter(1, userUUID);
         User user;
 
         try {
@@ -99,15 +122,16 @@ public class UserRepository implements IUserRepository, UserDetailsService {
         User user = this.findByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException("Nie znaleziono użytkownika z emailem " + email));
 
-        return new org.springframework.security.core.userdetails
-                .User(
+        return new SecurityContextUser(
                 user.getEmail(),
                 user.getPassword(),
                 user.isActive(),
                 true,
                 true,
                 !user.isLocked(),
-                this.getAuthorities(user));
+                this.getAuthorities(user),
+                user.getUserId()
+        );
     }
 
     private Collection<GrantedAuthority> getAuthorities(User user) {

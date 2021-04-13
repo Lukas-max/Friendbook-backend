@@ -130,7 +130,7 @@ public class UserRepository implements IUserRepository, UserDetailsService {
                 true,
                 !user.isLocked(),
                 this.getAuthorities(user),
-                user.getUserId()
+                user
         );
     }
 

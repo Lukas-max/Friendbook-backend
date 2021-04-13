@@ -6,7 +6,8 @@ import org.springframework.security.core.userdetails.User;
 import java.util.Collection;
 
 public class SecurityContextUser extends User {
-    private Long userId;
+    private static final long serialVersionUID = -3252843745339709184L;
+    private final luke.friendbook.account.model.User user;
 
     public SecurityContextUser(String username,
                                String password,
@@ -15,12 +16,12 @@ public class SecurityContextUser extends User {
                                boolean credentialsNonExpired,
                                boolean accountNonLocked,
                                Collection<? extends GrantedAuthority> authorities,
-                               Long userId) {
+                               luke.friendbook.account.model.User user) {
         super(username, password, enabled, accountNonExpired, credentialsNonExpired, accountNonLocked, authorities);
-        this.userId = userId;
+        this.user = user;
     }
 
-    public Long getUserId() {
-        return userId;
+    public luke.friendbook.account.model.User getUser() {
+        return user;
     }
 }

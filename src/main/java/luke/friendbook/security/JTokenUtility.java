@@ -96,4 +96,23 @@ public class JTokenUtility {
                 .map(GrantedAuthority::getAuthority)
                 .collect(Collectors.joining());
     }
+
+    public boolean validateToken(String token) {
+        String subject = null;
+        String credentials = null;
+        Collection<GrantedAuthority> authoritySet = null;
+
+        try {
+            subject = extractSubject(token);
+            credentials = extractCredentials(token);
+            authoritySet = extractAuthorities(token);
+        }catch (Exception e){
+            return false;
+        }
+
+        if (subject == null || subject.isEmpty() || credentials == null || credentials.isEmpty() || authoritySet == null)
+            return false;
+
+        return !isJwtTokenExpired(token);
+    }
 }

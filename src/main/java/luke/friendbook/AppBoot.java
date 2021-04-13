@@ -53,7 +53,6 @@ public class AppBoot {
         roleRepository.save(adminRole);
 
 
-        Set<User> users = new HashSet<>();
         User user1 = User.builder()
                 .username("marian")
                 .password(passwordEncoder.encode("user"))
@@ -64,7 +63,7 @@ public class AppBoot {
                 .roles(Set.of(role))
                 .build();
         user1.generateUUID();
-        users.add(user1);
+        userDao.save(user1);
 
         User user2 = User.builder()
                 .username("jarogniew")
@@ -76,7 +75,7 @@ public class AppBoot {
                 .roles(Set.of(role))
                 .build();
         user2.generateUUID();
-        users.add(user2);
+        userDao.save(user2);
 
         User user3 = User.builder()
                 .username("matylda")
@@ -88,8 +87,6 @@ public class AppBoot {
                 .roles(Set.of(role))
                 .build();
         user3.generateUUID();
-        users.add(user3);
-
-        userDao.saveAll(users);
+        userDao.save(user3);
     }
 }

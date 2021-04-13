@@ -21,6 +21,7 @@ public class UserService implements IUserService {
     @Override
     public List<UserResponseModel> getAllUsers() {
         List<User> users = userRepository.findAll();
+        users.forEach(user -> user.setPassword("SECRET"));
         Type type = new TypeToken<List<UserResponseModel>>(){}.getType();
         return new ModelMapper().map(users, type);
     }

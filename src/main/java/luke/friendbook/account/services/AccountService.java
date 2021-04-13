@@ -9,11 +9,13 @@ import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
 
 import java.time.LocalDateTime;
+import java.util.Base64;
 
 @Service
 public class AccountService implements IAccountService {
@@ -24,6 +26,7 @@ public class AccountService implements IAccountService {
     private final TemplateEngine templateEngine;
     private final IMailSender mailSender;
     private final IFileStorage fileStorage;
+    private final PasswordEncoder passwordEncoder;
     private final Logger log = LoggerFactory.getLogger(this.getClass());
     @Value("${app.mail.verification.url}")
     private String url;
@@ -36,13 +39,15 @@ public class AccountService implements IAccountService {
             IRoleRepository roleRepository,
             TemplateEngine templateEngine,
             IMailSender mailSender,
-            IFileStorage fileStorage) {
+            IFileStorage fileStorage,
+            PasswordEncoder passwordEncoder) {
         this.userDao = userDao;
         this.registrationTokenRepository = registrationTokenRepository;
         this.roleRepository = roleRepository;
         this.templateEngine = templateEngine;
         this.mailSender = mailSender;
         this.fileStorage = fileStorage;
+        this.passwordEncoder = passwordEncoder;
     }
 
 
@@ -50,7 +55,11 @@ public class AccountService implements IAccountService {
     public UserResponseModel register(UserRequestModel userRequestModel) {
         Role role = getUserRole(RoleType.USER);
         User user = new ModelMapper().map(userRequestModel, User.class);
+        user.generateUUID();
         user.getRoles().add(role);
+        user.setLocked(true);
+        String decodedPassword = new String(Base64.getDecoder().decode(user.getPassword().getBytes()));
+        user.setPassword(passwordEncoder.encode(decodedPassword));
         validateRegistration(user);
         MailSetting mailSetting = mailMode.equals("ON") ? MailSetting.ON : MailSetting.OFF;
 
@@ -102,6 +111,7 @@ public class AccountService implements IAccountService {
                                     "Błąd weryfikacji."));
 
             user.setActive(true);
+            user.setLocked(false);
             user.setAccountCreatedTime(LocalDateTime.now());
             userDao.save(user);
             registrationToken.setConfirmationDateTime(LocalDateTime.now());

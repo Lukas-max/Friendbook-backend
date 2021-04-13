@@ -1,6 +1,5 @@
 package luke.friendbook.security;
 
-import luke.friendbook.account.services.UserRepository;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
@@ -19,8 +18,7 @@ public class AppSecurity extends WebSecurityConfigurerAdapter {
 
     public AppSecurity(
             @Qualifier("userRepository") UserDetailsService userDetailsService,
-                       JTokenUtility tokenUtility,
-                       UserRepository userRepository) {
+                       JTokenUtility tokenUtility) {
         this.userDetailsService = userDetailsService;
         this.tokenUtility = tokenUtility;
     }
@@ -48,13 +46,13 @@ public class AppSecurity extends WebSecurityConfigurerAdapter {
     }
 
     private AuthenticationFilter getAuthenticationFilter() throws Exception {
-        AuthenticationFilter filter = new AuthenticationFilter(tokenUtility);
+        AuthenticationFilter filter = new AuthenticationFilter(tokenUtility, passwordEncoder(), userDetailsService);
         filter.setAuthenticationManager(this.authenticationManager());
         filter.setFilterProcessesUrl("/app/user/login");
         return filter;
     }
 
     private AuthorizationFilter getAuthorizationFilter() throws Exception {
-        return new AuthorizationFilter(this.authenticationManager(), tokenUtility);
+        return new AuthorizationFilter(this.authenticationManager(), tokenUtility, userDetailsService);
     }
 }

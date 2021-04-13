@@ -2,10 +2,7 @@ package luke.friendbook.storage.services;
 
 import luke.friendbook.account.model.User;
 import luke.friendbook.account.services.IUserRepository;
-import luke.friendbook.exception.DirectoryCreationFailException;
-import luke.friendbook.exception.FileNotFoundException;
-import luke.friendbook.exception.FileUnreadableException;
-import luke.friendbook.exception.UserNotFoundException;
+import luke.friendbook.exception.*;
 import luke.friendbook.security.model.SecurityContextUser;
 import luke.friendbook.storage.FileController;
 import luke.friendbook.storage.model.FileData;
@@ -15,10 +12,12 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.util.FileSystemUtils;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.method.annotation.MvcUriComponentsBuilder;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -76,7 +75,7 @@ public class FileStorage implements IFileStorage {
     }
 
     @Override
-    public File[] findUserDirectories(String userUUID) {
+    public File[] findDirectories(String userUUID) {
         String userDir = getDirectory(userUUID);
         return new File(mainDir.resolve(userDir).toUri())
                 .listFiles(File::isDirectory);
@@ -128,6 +127,31 @@ public class FileStorage implements IFileStorage {
                 new UserNotFoundException("Nie znaleziono użytkownika po przesłanym numerze identyfikacyjnym"));
 
         return user.getUserId().toString();
+    }
+
+    /**
+     * Saves files to passed directory. User directory however is taken from Authentication context, UserDetails object.
+     * So, saving files can be done only to directories of authenticated user in current request.
+     */
+    @Override
+    public int save(MultipartFile[] files, String directory) {
+        int savedFiles = 0;
+        String id = resolveAuthenticatedUserFolder();
+        Path saveDirectory = mainDir.resolve(id).resolve(directory);
+
+        for (MultipartFile file : files) {
+            try{
+                Files.copy(file.getInputStream(), saveDirectory.resolve(file.getOriginalFilename()));
+            }catch (FileAlreadyExistsException e) {
+                throw new FileExistsException("Plik " + file.getOriginalFilename() + " już istnieje. Nie dodano");
+            }catch (IOException e){
+                log.error(e.getLocalizedMessage());
+                e.printStackTrace();
+                throw new FileNotStoredException(e.getLocalizedMessage());
+            }
+            ++savedFiles;
+        }
+        return savedFiles;
     }
 
     @Override

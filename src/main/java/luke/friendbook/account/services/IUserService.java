@@ -8,4 +8,6 @@ import java.util.List;
 public interface IUserService {
 
     List<UserResponseModel> getAllUsers();
+
+    UserResponseModel getUserByUUID(String uuid);
 }

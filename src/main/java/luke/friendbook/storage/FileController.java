@@ -5,6 +5,7 @@ import luke.friendbook.storage.services.IFileStorage;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.io.IOException;
@@ -22,7 +23,7 @@ public class FileController {
 
     @GetMapping
     public ResponseEntity<File[]> getUserDirectories(@RequestParam(required = false) String userUUID) {
-        return ResponseEntity.ok().body(fileStorage.findUserDirectories(userUUID));
+        return ResponseEntity.ok().body(fileStorage.findDirectories(userUUID));
     }
 
     @GetMapping("/files")
@@ -41,6 +42,12 @@ public class FileController {
         return ResponseEntity.ok()
                 .header(HttpHeaders.CONTENT_DISPOSITION, "ddano plik " + fileName)
                 .body(data);
+    }
+
+    @PostMapping
+    public ResponseEntity<Integer> uploadFiles(@RequestParam("files") MultipartFile[] files, @RequestParam String directory) {
+        int length = fileStorage.save(files, directory);
+        return ResponseEntity.ok().body(length);
     }
 }
 

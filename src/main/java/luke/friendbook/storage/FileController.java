@@ -1,5 +1,6 @@
 package luke.friendbook.storage;
 
+import luke.friendbook.storage.model.DirectoryType;
 import luke.friendbook.storage.model.FileData;
 import luke.friendbook.storage.services.IFileStorage;
 import org.springframework.http.HttpHeaders;
@@ -37,17 +38,52 @@ public class FileController {
     public ResponseEntity<byte[]> downloadFile(@PathVariable String id,
                                                @PathVariable String directory,
                                                @PathVariable String fileName) {
-        byte[] data = fileStorage.download(id, directory, fileName);
+        byte[] data = fileStorage.download(id, directory, fileName, DirectoryType.STANDARD_DIRECTORY);
 
         return ResponseEntity.ok()
-                .header(HttpHeaders.CONTENT_DISPOSITION, "ddano plik " + fileName)
+                .header(HttpHeaders.CONTENT_DISPOSITION, "dodano plik " + fileName)
+                .body(data);
+    }
+
+    @GetMapping("/image/{id:.+}/{directory:.+}/{fileName:.+}")
+    public ResponseEntity<byte[]> downloadImage(@PathVariable String id,
+                                               @PathVariable String directory,
+                                               @PathVariable String fileName) {
+        byte[] data = fileStorage.download(id, directory, fileName, DirectoryType.IMAGE_DIRECTORY);
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "dodano plik " + fileName)
                 .body(data);
     }
 
     @PostMapping
-    public ResponseEntity<Integer> uploadFiles(@RequestParam("files") MultipartFile[] files, @RequestParam String directory) {
-        int length = fileStorage.save(files, directory);
+    public ResponseEntity<Integer> uploadFiles(@RequestBody MultipartFile[] files, @RequestParam String directory) {
+        int length = fileStorage.save(files, directory, DirectoryType.STANDARD_DIRECTORY);
         return ResponseEntity.ok().body(length);
+    }
+
+    @PostMapping("/images")
+    public ResponseEntity<Integer> uploadImages(@RequestBody MultipartFile[] files, @RequestParam String directory) {
+        int length = fileStorage.save(files, directory, DirectoryType.IMAGE_DIRECTORY);
+        return ResponseEntity.ok().body(length);
+    }
+
+    @PostMapping("/directory")
+    public ResponseEntity<?> createFolder(@RequestBody String directory) {
+        fileStorage.createFolder(directory);
+        return ResponseEntity.ok().build();
+    }
+
+    @DeleteMapping("/{directory}")
+    public ResponseEntity<Boolean> deleteFolder(@PathVariable String directory) {
+        boolean isDeleted = fileStorage.deleteFolder(directory);
+        return ResponseEntity.ok().body(isDeleted);
+    }
+
+    @DeleteMapping("/{directory}/{fileName}")
+    public ResponseEntity<?> deleteFile(@PathVariable String directory, @PathVariable String fileName) {
+        fileStorage.deleteFile(directory, fileName);
+        return ResponseEntity.ok().build();
     }
 }
 

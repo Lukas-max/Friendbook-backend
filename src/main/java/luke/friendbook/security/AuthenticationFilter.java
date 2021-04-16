@@ -3,6 +3,7 @@ package luke.friendbook.security;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.SneakyThrows;
 import luke.friendbook.account.model.LoginRequestModel;
+import luke.friendbook.security.model.SecurityContextUser;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.InternalAuthenticationServiceException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -67,13 +68,22 @@ public class AuthenticationFilter extends UsernamePasswordAuthenticationFilter {
         if (!authentication.isAuthenticated())
             throw new InternalAuthenticationServiceException("Błąd przy uwierzytelnieniu użytkownika");
 
+        String uuid = ((SecurityContextUser) authentication.getPrincipal())
+                .getUser()
+                .getUserUUID();
+
+        String username = ((SecurityContextUser) authentication.getPrincipal())
+                .getUser()
+                .getUsername();
+
         String auths = tokenUtility.pullAuthorities(authentication);
         String token = tokenUtility.generateToken(authentication);
         long timestamp = tokenUtility.getTokenExpirationDate(token)
                 .getTime();
 
 
-        response.setHeader("user", authentication.getName());
+        response.setHeader("username", username);
+        response.setHeader("user", uuid);
         response.setHeader("jwt-token", token);
         response.setHeader("roles", auths);
         response.setHeader("jwt-expiration", Long.toString(timestamp));

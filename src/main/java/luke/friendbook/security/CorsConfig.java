@@ -21,6 +21,7 @@ public class CorsConfig implements WebMvcConfigurer {
         configuration.setAllowCredentials(true);
         configuration.setExposedHeaders(List.of(
                 "jwt-token",
+                "username",
                 "roles",
                 "jwt-expiration",
                 "user"));

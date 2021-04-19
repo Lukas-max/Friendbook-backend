@@ -1,23 +1,58 @@
 package luke.friendbook.connection;
 
-import luke.friendbook.connection.model.ChatModel;
+import luke.friendbook.connection.model.ConnectedUser;
+import luke.friendbook.connection.model.PublicChatMessage;
+import luke.friendbook.connection.services.IPublicChatService;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.simp.SimpMessageSendingOperations;
 import org.springframework.stereotype.Controller;
 
+import java.util.HashSet;
+import java.util.Set;
+
 @Controller
 public class ChatController {
 
     private final SimpMessageSendingOperations messageTemplate;
+    private final IPublicChatService publicChatService;
+    private final Set<ConnectedUser> users = new HashSet<>();
 
-    public ChatController(SimpMessageSendingOperations messageTemplate) {
+    public ChatController(SimpMessageSendingOperations messageTemplate, IPublicChatService publicChatService) {
         this.messageTemplate = messageTemplate;
+        this.publicChatService = publicChatService;
+    }
+
+    @MessageMapping("/logged")
+    public void connectMessage(@Payload ConnectedUser connectedUser) {
+        users.add(connectedUser);
+        messageTemplate.convertAndSend("/topic/connection", users);
+    }
+
+    @MessageMapping("/exit")
+    public void exitConnectionMessage(@Payload ConnectedUser connectedUser) {
+        users.remove(connectedUser);
+        messageTemplate.convertAndSend("/topic/connection", users);
     }
 
     @MessageMapping("/send")
-    public void send(@Payload ChatModel chatModel) {
-        System.out.println(chatModel.toString());
-        messageTemplate.convertAndSend("/topic/public", chatModel);
+    public void send(@Payload PublicChatMessage publicChatMessage) {
+        publicChatService.saveMessage(publicChatMessage);
+        messageTemplate.convertAndSend("/topic/public", publicChatMessage);
     }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

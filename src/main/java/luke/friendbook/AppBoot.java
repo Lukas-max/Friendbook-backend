@@ -81,7 +81,7 @@ public class AppBoot {
                 .password(passwordEncoder.encode("user"))
                 .email("matylda@o2.pl")
                 .isActive(true)
-                .isLocked(true)
+                .isLocked(false)
                 .accountCreatedTime(LocalDateTime.now())
                 .roles(Set.of(role))
                 .build();

@@ -1,6 +1,7 @@
 package luke.friendbook.connection;
 
 import luke.friendbook.connection.model.ConnectedUser;
+import luke.friendbook.connection.model.PrivateChatMessage;
 import luke.friendbook.connection.model.PublicChatMessage;
 import luke.friendbook.connection.services.IPublicChatService;
 import org.springframework.messaging.handler.annotation.MessageMapping;
@@ -8,6 +9,7 @@ import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.simp.SimpMessageSendingOperations;
 import org.springframework.stereotype.Controller;
 
+import java.util.Base64;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -35,10 +37,17 @@ public class ChatController {
         messageTemplate.convertAndSend("/topic/connection", users);
     }
 
-    @MessageMapping("/send")
+    @MessageMapping("/public")
     public void send(@Payload PublicChatMessage publicChatMessage) {
         publicChatService.saveMessage(publicChatMessage);
         messageTemplate.convertAndSend("/topic/public", publicChatMessage);
+    }
+
+    @MessageMapping("/private")
+    public void sendPrivate(@Payload PrivateChatMessage privateChatMessage) {
+        String encodedNotification = Base64.getEncoder().encodeToString(privateChatMessage.getContent().getBytes());
+        System.out.println(encodedNotification);
+        messageTemplate.convertAndSend("/topic/private." + privateChatMessage.getReceiverUUID(), privateChatMessage);
     }
 }
 

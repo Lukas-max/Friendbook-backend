@@ -107,7 +107,7 @@ public class AccountService implements IAccountService {
         if (registrationToken != null && registrationToken.getExpirationDateTime().isAfter(LocalDateTime.now())){
             User user = userDao.findByEmail(registrationToken.getUser().getEmail())
                     .orElseThrow(() ->
-                            new UserNotFoundException("Nie znaleziono użytkownika pasującego do wysłanego tokena. " +
+                            new NotFoundException("Nie znaleziono użytkownika pasującego do wysłanego tokena. " +
                                     "Błąd weryfikacji."));
 
             user.setActive(true);
@@ -125,7 +125,7 @@ public class AccountService implements IAccountService {
 
     private RegistrationToken findToken(String token) {
         return registrationTokenRepository.findByToken(token).orElseThrow(() -> {
-            throw new RegisterTokenNotFoundException("Nie znaleziono w bazie tokena.");
+            throw new NotFoundException("Nie znaleziono w bazie tokena.");
         });
     }
 
@@ -136,7 +136,7 @@ public class AccountService implements IAccountService {
 
     private Role getUserRole(RoleType roleType){
         return roleRepository.findByRoleType(roleType)
-                .orElseThrow(() -> new RoleNotFoundException("Nie znaleziono roli użytkownika w trakcie tworzenia " +
+                .orElseThrow(() -> new NotFoundException("Nie znaleziono roli użytkownika w trakcie tworzenia " +
                         "nowego użytkownika. Błąd serwera."));
     }
 }

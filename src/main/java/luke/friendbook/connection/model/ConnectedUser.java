@@ -10,4 +10,5 @@ import lombok.NoArgsConstructor;
 public class ConnectedUser {
     private String username;
     private String userUUID;
+    private boolean messagePending;
 }

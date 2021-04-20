@@ -83,7 +83,7 @@ public class FileStorage implements IFileStorage {
         }
 
         if (!Files.isRegularFile(file) || !Files.isReadable(file))
-            throw new FileNotFoundException("Nie można znaleźć pliku " + fileName);
+            throw new NotFoundException("Nie można znaleźć pliku " + fileName);
 
         try {
             return Files.readAllBytes(file);
@@ -155,7 +155,7 @@ public class FileStorage implements IFileStorage {
      */
     private String resolveUserFolder(String userUUID) {
         User user = userRepository.findByUuid(userUUID).orElseThrow(() ->
-                new UserNotFoundException("Nie znaleziono użytkownika po przesłanym numerze identyfikacyjnym"));
+                new NotFoundException("Nie znaleziono użytkownika po przesłanym numerze identyfikacyjnym"));
 
         return user.getUserId().toString();
     }
@@ -235,7 +235,7 @@ public class FileStorage implements IFileStorage {
             Files.deleteIfExists(deleteImageFilePath);
 
             if (!result)
-                throw new FileNotFoundException("Nie mogłem znaleźć pliku " + fileName);
+                throw new NotFoundException("Nie mogłem znaleźć pliku " + fileName);
         }catch (IOException e){
             e.printStackTrace();
         }

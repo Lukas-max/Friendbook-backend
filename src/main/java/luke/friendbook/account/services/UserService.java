@@ -2,7 +2,7 @@ package luke.friendbook.account.services;
 
 import luke.friendbook.account.model.User;
 import luke.friendbook.account.model.UserResponseModel;
-import luke.friendbook.exception.UserNotFoundException;
+import luke.friendbook.exception.NotFoundException;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.TypeToken;
 import org.springframework.stereotype.Service;
@@ -32,7 +32,7 @@ public class UserService implements IUserService {
     @Override
     public UserResponseModel getUserByUUID(String uuid) {
         User user = userRepository.findByUuid(uuid).orElseThrow(() ->
-                new UserNotFoundException("Nie znalazłem użytkownika po numerz UUID"));
+                new NotFoundException("Nie znalazłem użytkownika po numerz UUID"));
 
         return mapper.map(user, UserResponseModel.class);
     }

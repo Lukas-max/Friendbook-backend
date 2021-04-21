@@ -7,6 +7,7 @@ import luke.friendbook.account.services.IRoleRepository;
 import luke.friendbook.account.services.IUserRepository;
 import luke.friendbook.account.services.RoleRepository;
 import luke.friendbook.account.services.UserRepository;
+import luke.friendbook.mainFeed.services.IFeedStorage;
 import luke.friendbook.storage.services.IFileStorage;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.context.event.EventListener;
@@ -15,7 +16,6 @@ import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
-import java.util.HashSet;
 import java.util.Set;
 
 @Component
@@ -25,21 +25,25 @@ public class AppBoot {
     private final IRoleRepository roleRepository;
     private final IFileStorage fileStorage;
     private final PasswordEncoder passwordEncoder;
+    private final IFeedStorage feedStorage;
 
     public AppBoot(UserRepository userDao,
                    RoleRepository roleRepository,
                    PasswordEncoder passwordEncoder,
-                   IFileStorage fileStorage) {
+                   IFileStorage fileStorage,
+                   IFeedStorage feedStorage) {
         this.userDao = userDao;
         this.roleRepository = roleRepository;
         this.passwordEncoder = passwordEncoder;
         this.fileStorage = fileStorage;
+        this.feedStorage = feedStorage;
     }
 
     @EventListener
     public void onApplicationContextInitialization(ContextRefreshedEvent event) throws IOException {
         bootstrapDatabase();
 //        fileStorage.init();
+        feedStorage.init();
     }
 
     private void bootstrapDatabase() {

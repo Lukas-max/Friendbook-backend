@@ -1,11 +1,13 @@
 package luke.friendbook.mainFeed.services;
 
+import luke.friendbook.account.model.User;
 import luke.friendbook.mainFeed.model.FeedModel;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
+import javax.persistence.TypedQuery;
 import java.util.List;
 import java.util.Optional;
 
@@ -18,7 +20,9 @@ public class FeedRepository implements IFeedRepository {
 
     @Override
     public List<FeedModel> findAll() {
-        return null;
+        final String query = "SELECT f FROM FeedModel f";
+        TypedQuery<FeedModel> userTypedQuery = entityManager.createQuery(query, FeedModel.class);
+        return userTypedQuery.getResultList();
     }
 
     @Override

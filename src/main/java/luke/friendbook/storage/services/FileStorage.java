@@ -1,10 +1,10 @@
 package luke.friendbook.storage.services;
 
+import luke.friendbook.Utils;
 import luke.friendbook.account.model.User;
 import luke.friendbook.account.services.IUserRepository;
 import luke.friendbook.exception.*;
 import luke.friendbook.security.model.SecurityContextUser;
-import luke.friendbook.storage.FileController;
 import luke.friendbook.storage.model.DirectoryType;
 import luke.friendbook.storage.model.FileData;
 import org.apache.tika.Tika;
@@ -15,7 +15,6 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.util.FileSystemUtils;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.servlet.mvc.method.annotation.MvcUriComponentsBuilder;
 
 import java.io.File;
 import java.io.IOException;
@@ -33,10 +32,12 @@ public class FileStorage implements IFileStorage {
     private final Path storageDir = Paths.get("pliki");
     private final Path otherDir = Paths.get("inne");
     private final IUserRepository userRepository;
+    private final Tika tika;
     private final Logger log = LoggerFactory.getLogger(FileStorage.class);
 
-    public FileStorage(IUserRepository userRepository) {
+    public FileStorage(IUserRepository userRepository, Tika tika) {
         this.userRepository = userRepository;
+        this.tika = tika;
     }
 
 
@@ -112,19 +113,20 @@ public class FileStorage implements IFileStorage {
                     FileData fileData = null;
 
                     try {
-                        Tika tika = new Tika();
                         String mimeType = tika.detect(file);
-                        String fileType = createFileTypeFromMimeType(mimeType);
+                        String fileType = Utils.createFileTypeFromMimeType(mimeType);
 
                         fileData = new FileData(
                                 file.getFileName().toString(),
-                                createFileUrl("downloadFile", userId, directory, file.getFileName()),
+                                Utils.createStorageFileUrl("downloadFile", userId, directory, file.getFileName()),
                                 mimeType,
                                 fileType,
                                 file.toFile().length());
 
-                        if (fileType.equals("image"))
-                            fileData.setImageUrl(createFileUrl("downloadImage", userId, directory, file.getFileName()));
+                        if (fileType.equals("image")){
+                            String url = Utils.createStorageFileUrl("downloadImage", userId, directory, file.getFileName());
+                            fileData.setImageUrl(url);
+                        }
 
                     } catch (IOException e) {
                         e.printStackTrace();
@@ -264,16 +266,6 @@ public class FileStorage implements IFileStorage {
     public void cleanAll() throws IOException {
         FileSystemUtils.deleteRecursively(mainDir);
         log.info("FileStorage - cleaned all files and directories.");
-    }
-
-    private String createFileUrl(String methodName, String user, String dir, Path file) {
-        return MvcUriComponentsBuilder
-                .fromMethodName(FileController.class, methodName, user, dir, file.getFileName().toString())
-                .build().toString();
-    }
-
-    private String createFileTypeFromMimeType(String mimeType) {
-        return mimeType.split("/")[0];
     }
 }
 

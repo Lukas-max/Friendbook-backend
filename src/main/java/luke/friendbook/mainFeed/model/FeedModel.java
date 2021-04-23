@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 import luke.friendbook.account.model.User;
 
 import javax.persistence.*;
+import java.sql.Timestamp;
 
 @NoArgsConstructor
 @AllArgsConstructor
@@ -20,6 +21,7 @@ public class FeedModel {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Lob
     @Column(name = "text", nullable = false)
     private String text;
 
@@ -28,6 +30,9 @@ public class FeedModel {
 
     @Column(name = "images")
     private Boolean images;
+
+    @Column(name = "timestamp", nullable = false)
+    private Timestamp feedTimestamp;
 
     @OneToOne
     @JoinColumn(name = "user_id", nullable = false)

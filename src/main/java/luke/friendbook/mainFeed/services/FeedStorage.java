@@ -1,5 +1,11 @@
 package luke.friendbook.mainFeed.services;
 
+import luke.friendbook.Utils;
+import luke.friendbook.exception.FileUnreadableException;
+import luke.friendbook.exception.NotFoundException;
+import luke.friendbook.storage.model.DirectoryType;
+import luke.friendbook.storage.model.FileData;
+import org.apache.tika.Tika;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -12,12 +18,17 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 
 @Service
-public class FeedStorage implements IFeedStorage{
+public class FeedStorage implements IFeedStorage {
 
     private final Path mainFeedDir = Paths.get("main-feed");
     private final Path feedDir = Paths.get("feed");
     private final Path imagesDir = Paths.get("images");
+    private final Tika tika;
     private final Logger log = LoggerFactory.getLogger(FeedStorage.class);
+
+    public FeedStorage(Tika tika) {
+        this.tika = tika;
+    }
 
     @Override
     public void init() throws IOException {
@@ -34,8 +45,63 @@ public class FeedStorage implements IFeedStorage{
         FileSystemUtils.deleteRecursively(mainFeedDir);
     }
 
+    public FileData[] findFileData(Long feedId) throws IOException {
+        Path path = mainFeedDir.resolve(feedDir).resolve(feedId.toString());
+
+        return Files.list(path)
+                .map(file -> {
+                    FileData fileData = null;
+
+                    try {
+                        String mimeType = tika.detect(file);
+                        String fileType = Utils.createFileTypeFromMimeType(mimeType);
+
+                        fileData = new FileData(
+                                file.getFileName().toString(),
+                                Utils.createFeedFileUrl("downloadFeedFile", feedId, file.getFileName().toString()),
+                                mimeType,
+                                fileType,
+                                file.toFile().length());
+
+                        if (fileType.equals("image")){
+                            String url = Utils.createFeedFileUrl("downloadFeedImageFile", feedId, file.getFileName().toString());
+                            fileData.setImageUrl(url);
+                        }
+
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                    return fileData;
+                }).toArray(FileData[]::new);
+    }
+
+    public byte[] download(String feedId, String fileName, DirectoryType type) {
+        Path file;
+        if (type.equals(DirectoryType.STANDARD_DIRECTORY)){
+            file = mainFeedDir
+                    .resolve(feedDir)
+                    .resolve(feedId)
+                    .resolve(fileName);
+        }else {
+            file = mainFeedDir
+                    .resolve(imagesDir)
+                    .resolve(feedId)
+                    .resolve(fileName);
+        }
+
+        if (!Files.isRegularFile(file) || !Files.isReadable(file))
+            throw new NotFoundException("Nie można znaleźć pliku " + fileName);
+
+        try {
+            return Files.readAllBytes(file);
+        }catch (IOException e){
+            e.printStackTrace();
+            throw new FileUnreadableException("Nie da się odczytać pliku " + fileName);
+        }
+    }
+
     @Override
-    public int saveFeedFiles(MultipartFile[] files, Long feedNumber){
+    public int saveFeedFiles(MultipartFile[] files, Long feedNumber) {
         int savedFiles = 0;
         String number = feedNumber.toString();
         Path feedPath = mainFeedDir.resolve(feedDir).resolve(Paths.get(number));
@@ -43,11 +109,11 @@ public class FeedStorage implements IFeedStorage{
         try {
             Files.createDirectory(feedPath);
 
-            for (MultipartFile file : files){
-                Files.copy(file.getInputStream(),feedPath.resolve(file.getOriginalFilename()));
+            for (MultipartFile file : files) {
+                Files.copy(file.getInputStream(), feedPath.resolve(file.getOriginalFilename()));
                 ++savedFiles;
             }
-        }catch (IOException e){
+        } catch (IOException e) {
             e.printStackTrace();
         }
         return savedFiles;
@@ -60,7 +126,7 @@ public class FeedStorage implements IFeedStorage{
         Path feedPath = mainFeedDir.resolve(feedDir).resolve(Paths.get(number));
         Path imagePath = mainFeedDir.resolve(imagesDir).resolve(Paths.get(number));
 
-        try{
+        try {
             Files.createDirectory(feedPath);
             Files.createDirectory(imagePath);
 
@@ -72,7 +138,7 @@ public class FeedStorage implements IFeedStorage{
             for (MultipartFile imageFile : images) {
                 Files.copy(imageFile.getInputStream(), imagePath.resolve(imageFile.getOriginalFilename()));
             }
-        }catch (IOException e){
+        } catch (IOException e) {
             log.error(e.getLocalizedMessage());
             e.printStackTrace();
         }

@@ -1,5 +1,6 @@
 package luke.friendbook;
 
+import org.apache.tika.Tika;
 import org.modelmapper.ModelMapper;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -16,5 +17,10 @@ public class FriendbookApplication {
     @Bean
     public ModelMapper getModelMapper() {
         return new ModelMapper();
+    }
+
+    @Bean
+    public Tika getTika() {
+        return new Tika();
     }
 }

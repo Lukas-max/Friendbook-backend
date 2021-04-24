@@ -1,6 +1,6 @@
 package luke.friendbook.account.services;
 
-import luke.friendbook.Repository;
+import luke.friendbook.utilities.Repository;
 import luke.friendbook.account.model.User;
 
 import java.util.List;

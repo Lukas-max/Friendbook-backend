@@ -1,6 +1,6 @@
 package luke.friendbook.mainFeed.services;
 
-import luke.friendbook.Utils;
+import luke.friendbook.utilities.Utils;
 import luke.friendbook.exception.FileUnreadableException;
 import luke.friendbook.exception.NotFoundException;
 import luke.friendbook.storage.model.DirectoryType;
@@ -63,7 +63,7 @@ public class FeedStorage implements IFeedStorage {
                                 fileType,
                                 file.toFile().length());
 
-                        if (fileType.equals("image")){
+                        if (fileType.equals("image")) {
                             String url = Utils.createFeedFileUrl("downloadFeedImageFile", feedId, file.getFileName().toString());
                             fileData.setImageUrl(url);
                         }
@@ -77,12 +77,12 @@ public class FeedStorage implements IFeedStorage {
 
     public byte[] download(String feedId, String fileName, DirectoryType type) {
         Path file;
-        if (type.equals(DirectoryType.STANDARD_DIRECTORY)){
+        if (type.equals(DirectoryType.STANDARD_DIRECTORY)) {
             file = mainFeedDir
                     .resolve(feedDir)
                     .resolve(feedId)
                     .resolve(fileName);
-        }else {
+        } else {
             file = mainFeedDir
                     .resolve(imagesDir)
                     .resolve(feedId)
@@ -94,15 +94,14 @@ public class FeedStorage implements IFeedStorage {
 
         try {
             return Files.readAllBytes(file);
-        }catch (IOException e){
+        } catch (IOException e) {
             e.printStackTrace();
             throw new FileUnreadableException("Nie da się odczytać pliku " + fileName);
         }
     }
 
     @Override
-    public int saveFeedFiles(MultipartFile[] files, Long feedNumber) {
-        int savedFiles = 0;
+    public void saveFeedFiles(MultipartFile[] files, Long feedNumber) {
         String number = feedNumber.toString();
         Path feedPath = mainFeedDir.resolve(feedDir).resolve(Paths.get(number));
 
@@ -111,17 +110,14 @@ public class FeedStorage implements IFeedStorage {
 
             for (MultipartFile file : files) {
                 Files.copy(file.getInputStream(), feedPath.resolve(file.getOriginalFilename()));
-                ++savedFiles;
             }
         } catch (IOException e) {
             e.printStackTrace();
         }
-        return savedFiles;
     }
 
     @Override
-    public int saveFeedFilesPlusCompressed(MultipartFile[] files, MultipartFile[] images, Long feedNumber) {
-        int savedFiles = 0;
+    public void saveFeedFilesPlusCompressed(MultipartFile[] files, MultipartFile[] images, Long feedNumber) {
         String number = feedNumber.toString();
         Path feedPath = mainFeedDir.resolve(feedDir).resolve(Paths.get(number));
         Path imagePath = mainFeedDir.resolve(imagesDir).resolve(Paths.get(number));
@@ -132,7 +128,6 @@ public class FeedStorage implements IFeedStorage {
 
             for (MultipartFile file : files) {
                 Files.copy(file.getInputStream(), feedPath.resolve(file.getOriginalFilename()));
-                ++savedFiles;
             }
 
             for (MultipartFile imageFile : images) {
@@ -142,7 +137,30 @@ public class FeedStorage implements IFeedStorage {
             log.error(e.getLocalizedMessage());
             e.printStackTrace();
         }
-        return savedFiles;
+    }
+
+    @Override
+    public void deleteFeedFiles(String feedId) {
+        Path deleteFilesPath = mainFeedDir.resolve(feedDir).resolve(feedId);
+
+        try {
+            FileSystemUtils.deleteRecursively(deleteFilesPath);
+        } catch (IOException e) {
+            log.error(e.getLocalizedMessage());
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    public void deleteFeedImages(String feedId) {
+        Path deleteImagesPath = mainFeedDir.resolve(imagesDir).resolve(feedId);
+
+        try {
+            FileSystemUtils.deleteRecursively(deleteImagesPath);
+        } catch (IOException e) {
+            log.error(e.getLocalizedMessage());
+            e.printStackTrace();
+        }
     }
 }
 

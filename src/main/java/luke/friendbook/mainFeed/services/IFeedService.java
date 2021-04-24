@@ -13,9 +13,11 @@ public interface IFeedService {
 
     byte[] download(String feedId, String fileName, DirectoryType directoryType);
 
-    void saveTextFeed(String text);
+    FeedModelDto saveTextFeed(String text);
 
-    int saveFeedWithFiles(MultipartFile[] files, String text);
+    FeedModelDto saveFeedWithFiles(MultipartFile[] files, String text) throws IOException;
 
-    int saveFeedWithFilesPlusCompressed(MultipartFile[] files, MultipartFile[] images, String text);
+    FeedModelDto saveFeedWithFilesPlusCompressed(MultipartFile[] files, MultipartFile[] images, String text) throws IOException;
+
+    void deleteFeed(String feedId);
 }

@@ -1,6 +1,6 @@
 package luke.friendbook.connection.services.p2p;
 
-import luke.friendbook.Repository;
+import luke.friendbook.utilities.Repository;
 import luke.friendbook.connection.model.ChatRoom;
 
 import java.util.Optional;

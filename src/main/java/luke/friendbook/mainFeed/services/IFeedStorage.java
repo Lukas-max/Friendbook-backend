@@ -16,7 +16,11 @@ public interface IFeedStorage {
 
     byte[] download(String feedId, String fileName, DirectoryType type);
 
-    int saveFeedFiles(MultipartFile[] files, Long feedNumber);
+    void saveFeedFiles(MultipartFile[] files, Long feedNumber);
 
-    int saveFeedFilesPlusCompressed(MultipartFile[] files, MultipartFile[] images, Long feedNumber);
+    void saveFeedFilesPlusCompressed(MultipartFile[] files, MultipartFile[] images, Long feedNumber);
+
+    void deleteFeedFiles(String feedId);
+
+    void deleteFeedImages(String feedId);
 }

@@ -17,7 +17,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 @Controller
-public class ChatController {
+public class StompController {
 
     private final SimpMessageSendingOperations messageTemplate;
     private final IPublicChatService publicChatService;
@@ -25,10 +25,10 @@ public class ChatController {
     private final IPrivateChatMessageService privateChatMessageService;
     private final Set<ConnectedUser> users = new HashSet<>();
 
-    public ChatController(SimpMessageSendingOperations messageTemplate,
-                          IPublicChatService publicChatService,
-                          IChatRoomService chatRoomService,
-                          IPrivateChatMessageService privateChatMessageService) {
+    public StompController(SimpMessageSendingOperations messageTemplate,
+                           IPublicChatService publicChatService,
+                           IChatRoomService chatRoomService,
+                           IPrivateChatMessageService privateChatMessageService) {
         this.messageTemplate = messageTemplate;
         this.publicChatService = publicChatService;
         this.chatRoomService = chatRoomService;

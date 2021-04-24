@@ -1,4 +1,4 @@
-package luke.friendbook;
+package luke.friendbook.utilities;
 
 import luke.friendbook.account.model.Role;
 import luke.friendbook.account.model.RoleType;

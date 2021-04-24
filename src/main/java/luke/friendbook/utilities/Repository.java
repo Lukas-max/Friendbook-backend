@@ -1,4 +1,4 @@
-package luke.friendbook;
+package luke.friendbook.utilities;
 
 import java.util.List;
 import java.util.Optional;

@@ -1,4 +1,4 @@
-package luke.friendbook.security;
+package luke.friendbook.utilities;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
@@ -90,7 +90,7 @@ public class JTokenUtility {
         return claims;
     }
 
-    protected String pullAuthorities(Authentication authentication) {
+    public String pullAuthorities(Authentication authentication) {
         return authentication.getAuthorities()
                 .stream()
                 .map(GrantedAuthority::getAuthority)

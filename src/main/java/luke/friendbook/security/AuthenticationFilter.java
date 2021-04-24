@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.SneakyThrows;
 import luke.friendbook.account.model.LoginRequestModel;
 import luke.friendbook.security.model.SecurityContextUser;
+import luke.friendbook.utilities.JTokenUtility;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.InternalAuthenticationServiceException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;

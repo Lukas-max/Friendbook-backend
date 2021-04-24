@@ -1,7 +1,10 @@
-package luke.friendbook;
+package luke.friendbook.utilities;
 
 import luke.friendbook.mainFeed.MainFeedController;
+import luke.friendbook.security.model.SecurityContextUser;
 import luke.friendbook.storage.FileController;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.servlet.mvc.method.annotation.MvcUriComponentsBuilder;
 
 import java.nio.file.Path;
@@ -23,5 +26,10 @@ public interface Utils {
         return MvcUriComponentsBuilder
                 .fromMethodName(FileController.class, methodName, user, dir, file.getFileName().toString())
                 .build().toString();
+    }
+
+    static SecurityContextUser getAuthenticatedUser(){
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        return (SecurityContextUser) auth.getPrincipal();
     }
 }

@@ -1,6 +1,7 @@
 package luke.friendbook.security;
 
 
+import luke.friendbook.utilities.JTokenUtility;
 import org.springframework.http.HttpHeaders;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;

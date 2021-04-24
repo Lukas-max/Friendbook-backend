@@ -1,12 +1,15 @@
 package luke.friendbook.mainFeed.services;
 
+import luke.friendbook.utilities.Utils;
 import luke.friendbook.account.model.User;
+import luke.friendbook.exception.NotFoundException;
 import luke.friendbook.exception.UserUnauthorizedException;
 import luke.friendbook.mainFeed.model.FeedModel;
 import luke.friendbook.mainFeed.model.FeedModelDto;
 import luke.friendbook.security.model.SecurityContextUser;
 import luke.friendbook.storage.model.DirectoryType;
 import luke.friendbook.storage.model.FileData;
+import org.modelmapper.ModelMapper;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -35,7 +38,7 @@ public class FeedService implements IFeedService {
 
         for (FeedModelDto feed : feedModelDtoList) {
             if (feed.getFiles()) {
-                Long feedId = feed.getId();
+                Long feedId = feed.getFeedId();
                 FileData[] fileData = feedStorage.findFileData(feedId);
                 feed.setFileData(fileData);
             }
@@ -48,7 +51,7 @@ public class FeedService implements IFeedService {
     }
 
     @Override
-    public void saveTextFeed(String text) {
+    public FeedModelDto saveTextFeed(String text) {
         User user = getAuthenticatedUser();
         FeedModel userFeed = FeedModel.builder()
                 .text(text)
@@ -58,11 +61,12 @@ public class FeedService implements IFeedService {
                 .feedTimestamp(new Timestamp(System.currentTimeMillis()))
                 .build();
 
-        feedRepository.save(userFeed);
+        FeedModel savedFeed = feedRepository.save(userFeed);
+        return new FeedModelDto(savedFeed);
     }
 
     @Override
-    public int saveFeedWithFiles(MultipartFile[] files, String text) {
+    public FeedModelDto saveFeedWithFiles(MultipartFile[] files, String text) throws IOException {
         User user = getAuthenticatedUser();
         FeedModel userFeed = FeedModel.builder()
                 .text(text)
@@ -73,11 +77,13 @@ public class FeedService implements IFeedService {
                 .build();
 
         FeedModel persistedFeed = feedRepository.save(userFeed);
-        return feedStorage.saveFeedFiles(files, persistedFeed.getId());
+        feedStorage.saveFeedFiles(files, persistedFeed.getId());
+        FileData[] fileData = feedStorage.findFileData(persistedFeed.getId());
+        return new FeedModelDto(persistedFeed, fileData);
     }
 
     @Override
-    public int saveFeedWithFilesPlusCompressed(MultipartFile[] files, MultipartFile[] images, String text) {
+    public FeedModelDto saveFeedWithFilesPlusCompressed(MultipartFile[] files, MultipartFile[] images, String text) throws IOException {
         User user = getAuthenticatedUser();
         FeedModel userFeed = FeedModel.builder()
                 .text(text)
@@ -88,7 +94,26 @@ public class FeedService implements IFeedService {
                 .build();
 
         FeedModel persistedFeed = feedRepository.save(userFeed);
-        return feedStorage.saveFeedFilesPlusCompressed(files, images, persistedFeed.getId());
+        feedStorage.saveFeedFilesPlusCompressed(files, images, persistedFeed.getId());
+        FileData[] fileData = feedStorage.findFileData(persistedFeed.getId());
+        return new FeedModelDto(persistedFeed, fileData);
+    }
+
+    @Override
+    public void deleteFeed(String feedId) {
+        FeedModel feed = feedRepository.findById(Long.valueOf(feedId))
+                .orElseThrow(() -> new NotFoundException("Nie ma takiego zapisu w bazie by go usunąć"));
+
+        SecurityContextUser user = Utils.getAuthenticatedUser();
+        if (!user.getUser().getUserUUID().equals(feed.getUser().getUserUUID()))
+            throw new UserUnauthorizedException("Nie masz dostępu by usunąć ten wpis");
+
+        feedRepository.deleteFeed(feed);
+        if (feed.getFiles())
+            feedStorage.deleteFeedFiles(feedId);
+
+        if (feed.getImages())
+            feedStorage.deleteFeedImages(feedId);
     }
 
     private User getAuthenticatedUser() {

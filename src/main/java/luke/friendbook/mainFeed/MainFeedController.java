@@ -5,6 +5,7 @@ import luke.friendbook.mainFeed.services.IFeedService;
 import luke.friendbook.storage.model.DirectoryType;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
+import org.springframework.messaging.simp.SimpMessageSendingOperations;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -16,9 +17,11 @@ import java.util.List;
 public class MainFeedController {
 
     private final IFeedService feedService;
+    private final SimpMessageSendingOperations messageTemplate;
 
-    public MainFeedController(IFeedService feedService) {
+    public MainFeedController(IFeedService feedService, SimpMessageSendingOperations messageTemplate) {
         this.feedService = feedService;
+        this.messageTemplate = messageTemplate;
     }
 
     @GetMapping
@@ -47,21 +50,52 @@ public class MainFeedController {
 
     @PostMapping
     public ResponseEntity<?> postFeed(@RequestBody String text) {
-        feedService.saveTextFeed(text);
+        FeedModelDto feedDto = feedService.saveTextFeed(text);
+        messageTemplate.convertAndSend("/topic/feed", feedDto);
         return ResponseEntity.ok().build();
     }
 
     @PostMapping("/addons")
-    public ResponseEntity<Number> postFeedWithFiles(@RequestBody MultipartFile[] files, @RequestParam String text) {
-        int filesCopied = feedService.saveFeedWithFiles(files, text);
-        return ResponseEntity.ok().body(filesCopied);
+    public ResponseEntity<?> postFeedWithFiles(@RequestBody MultipartFile[] files,
+                                                    @RequestParam String text) throws IOException {
+        FeedModelDto feedDto = feedService.saveFeedWithFiles(files, text);
+        messageTemplate.convertAndSend("/topic/feed", feedDto);
+        return ResponseEntity.ok().build();
     }
 
     @PostMapping("/addons-comp")
-    public ResponseEntity<Number> postFeedWithFilesPlusCompressed(@RequestBody MultipartFile[] files,
+    public ResponseEntity<?> postFeedWithFilesPlusCompressed(@RequestBody MultipartFile[] files,
                                                              @RequestBody MultipartFile[] images,
-                                                             @RequestParam String text) {
-        int filesCopied = feedService.saveFeedWithFilesPlusCompressed(files, images, text);
-        return ResponseEntity.ok().body(filesCopied);
+                                                             @RequestParam String text) throws IOException {
+        FeedModelDto feedDto = feedService.saveFeedWithFilesPlusCompressed(files, images, text);
+        messageTemplate.convertAndSend("/topic/feed", feedDto);
+        return ResponseEntity.ok().build();
+    }
+
+    @DeleteMapping("/{feedId}")
+    public ResponseEntity<?> deleteFeed(@PathVariable String feedId) {
+        feedService.deleteFeed(feedId);
+        messageTemplate.convertAndSend("/topic/delete-feed",feedId);
+        return ResponseEntity.ok().build();
     }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

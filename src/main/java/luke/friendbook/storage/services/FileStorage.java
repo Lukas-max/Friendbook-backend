@@ -1,6 +1,6 @@
 package luke.friendbook.storage.services;
 
-import luke.friendbook.Utils;
+import luke.friendbook.utilities.Utils;
 import luke.friendbook.account.model.User;
 import luke.friendbook.account.services.IUserRepository;
 import luke.friendbook.exception.*;

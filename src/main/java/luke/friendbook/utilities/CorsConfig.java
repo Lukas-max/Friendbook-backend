@@ -1,4 +1,4 @@
-package luke.friendbook.security;
+package luke.friendbook.utilities;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

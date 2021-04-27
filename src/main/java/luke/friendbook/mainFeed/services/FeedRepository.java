@@ -1,13 +1,14 @@
 package luke.friendbook.mainFeed.services;
 
+import luke.friendbook.Chunk;
+import luke.friendbook.Page;
 import luke.friendbook.mainFeed.model.FeedModel;
+import luke.friendbook.mainFeed.model.FeedModelDto;
+import luke.friendbook.utilities.Utils;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.persistence.EntityManager;
-import javax.persistence.NoResultException;
-import javax.persistence.PersistenceContext;
-import javax.persistence.TypedQuery;
+import javax.persistence.*;
 import java.util.List;
 import java.util.Optional;
 
@@ -22,20 +23,51 @@ public class FeedRepository implements IFeedRepository {
     @Transactional
     public List<FeedModel> findAll() {
         final String query = "SELECT f FROM FeedModel f";
-        TypedQuery<FeedModel> userTypedQuery = entityManager.createQuery(query, FeedModel.class);
-        return userTypedQuery.getResultList();
+        TypedQuery<FeedModel> feedTypedQuery = entityManager.createQuery(query, FeedModel.class);
+        return feedTypedQuery.getResultList();
+    }
+
+    @Override
+    @Transactional
+    public Page<FeedModelDto> findPage(int pageNumber, int pageSize) {
+        Query countQuery = entityManager.createQuery("SELECT COUNT(f.id) FROM FeedModel f");
+        long countResult = (long) countQuery.getSingleResult();
+        int totalPages = (int) (countResult/pageSize);
+
+        final String query = "SELECT f FROM FeedModel f ORDER BY f.id DESC";
+        TypedQuery<FeedModel> feedTypedQuery = entityManager.createQuery(query, FeedModel.class)
+                .setFirstResult((pageNumber - 1) * pageSize)
+                .setMaxResults(pageSize);
+
+        List<FeedModel> feedModelList = feedTypedQuery.getResultList();
+        List<FeedModelDto> feedModelDtoList = Utils.returnFeedModelDto(feedModelList);
+        return new Page<>(countResult, totalPages, feedModelList.size(), pageNumber, feedModelDtoList);
+    }
+
+    @Override
+    @Transactional
+    public Chunk<FeedModelDto> findChunk(int limit, long offset) {
+        final String query = "SELECT * FROM feed ORDER BY id DESC LIMIT ?1 OFFSET ?2";
+        Query feedQuery = entityManager.createNativeQuery(query, FeedModel.class)
+                .setParameter(1, limit)
+                .setParameter(2, offset);
+
+        @SuppressWarnings("unchecked")
+        List<FeedModel> feedModelList =(List<FeedModel>) feedQuery.getResultList();
+        List<FeedModelDto> feedModelDtoList = Utils.returnFeedModelDto(feedModelList);
+        return new Chunk<>(limit, offset, feedModelDtoList);
     }
 
     @Override
     @Transactional
     public Optional<FeedModel> findById(Long id) {
         final String query = "SELECT f FROM FeedModel f WHERE f.id = ?1";
-        TypedQuery<FeedModel> userTypedQuery = entityManager.createQuery(query, FeedModel.class);
-        userTypedQuery.setParameter(1, id);
+        TypedQuery<FeedModel> feedTypedQuery = entityManager.createQuery(query, FeedModel.class);
+        feedTypedQuery.setParameter(1, id);
         FeedModel feed;
 
         try {
-            feed = userTypedQuery.getSingleResult();
+            feed = feedTypedQuery.getSingleResult();
         } catch (NoResultException e) {
             return Optional.empty();
         }

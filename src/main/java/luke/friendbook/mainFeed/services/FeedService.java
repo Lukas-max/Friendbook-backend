@@ -1,6 +1,6 @@
 package luke.friendbook.mainFeed.services;
 
-import luke.friendbook.utilities.Utils;
+import luke.friendbook.Chunk;
 import luke.friendbook.account.model.User;
 import luke.friendbook.exception.NotFoundException;
 import luke.friendbook.exception.UserUnauthorizedException;
@@ -9,7 +9,7 @@ import luke.friendbook.mainFeed.model.FeedModelDto;
 import luke.friendbook.security.model.SecurityContextUser;
 import luke.friendbook.storage.model.DirectoryType;
 import luke.friendbook.storage.model.FileData;
-import org.modelmapper.ModelMapper;
+import luke.friendbook.utilities.Utils;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -18,7 +18,6 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.sql.Timestamp;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 public class FeedService implements IFeedService {
@@ -31,10 +30,10 @@ public class FeedService implements IFeedService {
         this.feedStorage = feedStorage;
     }
 
-
+    // już nie używany:
     public List<FeedModelDto> findFeedData() throws IOException {
         List<FeedModel> feedModels = feedRepository.findAll();
-        List<FeedModelDto> feedModelDtoList = returnFeedModelDto(feedModels);
+        List<FeedModelDto> feedModelDtoList = Utils.returnFeedModelDto(feedModels);
 
         for (FeedModelDto feed : feedModelDtoList) {
             if (feed.getFiles()) {
@@ -44,6 +43,20 @@ public class FeedService implements IFeedService {
             }
         }
         return feedModelDtoList;
+    }
+
+    @Override
+    public Chunk<FeedModelDto> findFeedChunkData(int limit, long offset) throws IOException {
+        Chunk<FeedModelDto> feedModelDtoChunk = feedRepository.findChunk(limit, offset);
+
+        for (FeedModelDto feed : feedModelDtoChunk.getContent()) {
+            if (feed.getFiles()) {
+                Long feedId = feed.getFeedId();
+                FileData[] fileData = feedStorage.findFileData(feedId);
+                feed.setFileData(fileData);
+            }
+        }
+        return feedModelDtoChunk;
     }
 
     public byte[] download(String feedId, String fileName, DirectoryType directoryType) {
@@ -124,20 +137,5 @@ public class FeedService implements IFeedService {
             throw new UserUnauthorizedException("Brak dostępu. Brak uwierzytelnionego użytkownika.");
 
         return contextUser.getUser();
-    }
-
-    private List<FeedModelDto> returnFeedModelDto(List<FeedModel> feedModels) {
-        return feedModels.stream()
-                .map(model -> {
-                    return new FeedModelDto(
-                            model.getId(),
-                            model.getText(),
-                            model.getFiles(),
-                            model.getImages(),
-                            model.getFeedTimestamp(),
-                            model.getUser().getUsername(),
-                            model.getUser().getUserUUID()
-                    );
-                }).collect(Collectors.toList());
     }
 }

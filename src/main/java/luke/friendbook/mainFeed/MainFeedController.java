@@ -1,5 +1,6 @@
 package luke.friendbook.mainFeed;
 
+import luke.friendbook.Chunk;
 import luke.friendbook.mainFeed.model.FeedModelDto;
 import luke.friendbook.mainFeed.services.IFeedService;
 import luke.friendbook.storage.model.DirectoryType;
@@ -10,7 +11,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/feed")
@@ -24,10 +24,13 @@ public class MainFeedController {
         this.messageTemplate = messageTemplate;
     }
 
+    // działaj dalej tutaj:
     @GetMapping
-    public ResponseEntity<List<FeedModelDto>> getFeed() throws IOException {
-        List<FeedModelDto> feedModelDtoList = feedService.findFeedData();
-        return ResponseEntity.ok().body(feedModelDtoList);
+    public ResponseEntity<Chunk<FeedModelDto>> getFeed(@RequestParam String limit, @RequestParam String offset)
+            throws IOException {
+        Chunk<FeedModelDto> feedModelDtoChunk =
+                feedService.findFeedChunkData(Integer.parseInt(limit), Long.parseLong(offset));
+        return ResponseEntity.ok().body(feedModelDtoChunk);
     }
 
     @GetMapping("/{feedId}/{fileName}")

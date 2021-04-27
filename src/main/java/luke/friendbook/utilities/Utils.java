@@ -26,9 +26,9 @@ public interface Utils {
                 .toString();
     }
 
-    static String createStorageFileUrl(String methodName, String user, String dir, Path file) {
+    static String createStorageFileUrl(String methodName, String user, String dir, String fileName) {
         return MvcUriComponentsBuilder
-                .fromMethodName(FileController.class, methodName, user, dir, file.getFileName().toString())
+                .fromMethodName(FileController.class, methodName, user, dir, fileName)
                 .build().toString();
     }
 

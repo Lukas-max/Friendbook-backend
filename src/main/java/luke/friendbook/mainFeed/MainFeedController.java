@@ -1,6 +1,6 @@
 package luke.friendbook.mainFeed;
 
-import luke.friendbook.Chunk;
+import luke.friendbook.model.Chunk;
 import luke.friendbook.mainFeed.model.FeedModelDto;
 import luke.friendbook.mainFeed.services.IFeedService;
 import luke.friendbook.storage.model.DirectoryType;

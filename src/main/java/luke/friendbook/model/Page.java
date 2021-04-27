@@ -1,4 +1,4 @@
-package luke.friendbook;
+package luke.friendbook.model;
 
 import lombok.*;
 
@@ -6,7 +6,7 @@ import java.util.List;
 
 @NoArgsConstructor
 @AllArgsConstructor
-@Getter
+@Data
 @Builder 
 public class Page<T> {
     private long totalItems;

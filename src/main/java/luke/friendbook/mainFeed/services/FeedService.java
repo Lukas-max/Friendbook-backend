@@ -1,6 +1,6 @@
 package luke.friendbook.mainFeed.services;
 
-import luke.friendbook.Chunk;
+import luke.friendbook.model.Chunk;
 import luke.friendbook.account.model.User;
 import luke.friendbook.exception.NotFoundException;
 import luke.friendbook.exception.UserUnauthorizedException;
@@ -30,7 +30,7 @@ public class FeedService implements IFeedService {
         this.feedStorage = feedStorage;
     }
 
-    // już nie używany:
+    @Override
     public List<FeedModelDto> findFeedData() throws IOException {
         List<FeedModel> feedModels = feedRepository.findAll();
         List<FeedModelDto> feedModelDtoList = Utils.returnFeedModelDto(feedModels);

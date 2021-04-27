@@ -1,14 +1,14 @@
-package luke.friendbook;
+package luke.friendbook.model;
 
 import lombok.AllArgsConstructor;
-import lombok.Getter;
+import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.util.List;
 
 @NoArgsConstructor
 @AllArgsConstructor
-@Getter
+@Data
 public class Chunk<T> {
     private int limit;
     private long offset;

@@ -1,6 +1,6 @@
 package luke.friendbook.mainFeed.services;
 
-import luke.friendbook.Chunk;
+import luke.friendbook.model.Chunk;
 import luke.friendbook.mainFeed.model.FeedModelDto;
 import luke.friendbook.storage.model.DirectoryType;
 import org.springframework.web.multipart.MultipartFile;

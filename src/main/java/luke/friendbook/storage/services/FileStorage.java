@@ -1,12 +1,13 @@
 package luke.friendbook.storage.services;
 
-import luke.friendbook.utilities.Utils;
+import luke.friendbook.model.Chunk;
 import luke.friendbook.account.model.User;
 import luke.friendbook.account.services.IUserRepository;
 import luke.friendbook.exception.*;
 import luke.friendbook.security.model.SecurityContextUser;
 import luke.friendbook.storage.model.DirectoryType;
 import luke.friendbook.storage.model.FileData;
+import luke.friendbook.utilities.Utils;
 import org.apache.tika.Tika;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,6 +23,7 @@ import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -118,13 +120,13 @@ public class FileStorage implements IFileStorage {
 
                         fileData = new FileData(
                                 file.getFileName().toString(),
-                                Utils.createStorageFileUrl("downloadFile", userId, directory, file.getFileName()),
+                                Utils.createStorageFileUrl("downloadFile", userId, directory, file.getFileName().toString()),
                                 mimeType,
                                 fileType,
                                 file.toFile().length());
 
-                        if (fileType.equals("image")){
-                            String url = Utils.createStorageFileUrl("downloadImage", userId, directory, file.getFileName());
+                        if (fileType.equals("image")) {
+                            String url = Utils.createStorageFileUrl("downloadImage", userId, directory, file.getFileName().toString());
                             fileData.setImageUrl(url);
                         }
 
@@ -134,6 +136,37 @@ public class FileStorage implements IFileStorage {
 
                     return fileData;
                 }).toArray(FileData[]::new);
+    }
+
+    @Override
+    public Chunk<FileData> findFilesChunk(String userUUID, String directory, int limit, int offset) throws IOException {
+        String userId = resolveUserFolder(userUUID);
+        Path searchedDirectory = mainDir
+                .resolve(userId)
+                .resolve(directory);
+
+        File file = new File(searchedDirectory.toString());
+        File[] files = file.listFiles();
+        List<FileData> fileDataList = new ArrayList<>();
+
+        for (int i = offset; i < (offset + limit) && i < files.length; i++) {
+            String mimeType = tika.detect(files[i]);
+            String fileType = Utils.createFileTypeFromMimeType(mimeType);
+
+            FileData fileData = new FileData(
+                    files[i].getName(),
+                    Utils.createStorageFileUrl("downloadFile", userId, directory, files[i].getName()),
+                    mimeType,
+                    fileType,
+                    files[i].length());
+
+            if (fileType.equals("image")) {
+                String url = Utils.createStorageFileUrl("downloadImage", userId, directory, files[i].getName());
+                fileData.setImageUrl(url);
+            }
+            fileDataList.add(fileData);
+        }
+        return new Chunk<>(limit, offset, fileDataList);
     }
 
     private String getDirectory(String userUUID) {
@@ -218,7 +251,7 @@ public class FileStorage implements IFileStorage {
         try {
             FileSystemUtils.deleteRecursively(deletePath);
             FileSystemUtils.deleteRecursively(deleteImageFolderPath);
-        }catch (IOException e){
+        } catch (IOException e) {
             log.error(e.getLocalizedMessage());
             return false;
         }
@@ -238,7 +271,7 @@ public class FileStorage implements IFileStorage {
 
             if (!result)
                 throw new NotFoundException("Nie mogłem znaleźć pliku " + fileName);
-        }catch (IOException e){
+        } catch (IOException e) {
             e.printStackTrace();
         }
     }

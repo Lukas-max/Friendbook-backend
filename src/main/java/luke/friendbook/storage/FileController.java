@@ -1,5 +1,6 @@
 package luke.friendbook.storage;
 
+import luke.friendbook.model.Chunk;
 import luke.friendbook.storage.model.DirectoryType;
 import luke.friendbook.storage.model.FileData;
 import luke.friendbook.storage.services.IFileStorage;
@@ -28,10 +29,20 @@ public class FileController {
     }
 
     @GetMapping("/files")
-    public ResponseEntity<FileData[]> getFileData(@RequestParam String userUUID, @RequestParam String directory) throws IOException {
+    public ResponseEntity<Chunk<FileData>> getFileData(@RequestParam String userUUID,
+                                                  @RequestParam String directory,
+                                                  @RequestParam String limit,
+                                                  @RequestParam String offset) throws IOException {
         String decodedUUID = new String(Base64.getDecoder().decode(userUUID.getBytes()));
         String decodedDirectory = new String(Base64.getDecoder().decode(directory.getBytes()));
-        return ResponseEntity.ok().body(fileStorage.findFiles(decodedUUID, decodedDirectory));
+
+        Chunk<FileData> fileChunk = fileStorage.findFilesChunk(
+                decodedUUID,
+                decodedDirectory,
+                Integer.parseInt(limit),
+                Integer.parseInt(offset));
+
+        return ResponseEntity.ok().body(fileChunk);
     }
 
     @GetMapping("/file/{id:.+}/{directory:.+}/{fileName:.+}")

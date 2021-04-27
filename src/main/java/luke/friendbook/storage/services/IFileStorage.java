@@ -1,5 +1,6 @@
 package luke.friendbook.storage.services;
 
+import luke.friendbook.model.Chunk;
 import luke.friendbook.account.model.User;
 import luke.friendbook.storage.model.DirectoryType;
 import luke.friendbook.storage.model.FileData;
@@ -17,6 +18,8 @@ public interface IFileStorage {
     File[] findDirectories(String userUUID);
 
     FileData[] findFiles(String userUUID, String directory) throws IOException;
+
+    Chunk<FileData> findFilesChunk(String userUUID, String directory, int limit, int offset) throws IOException;
 
     int save(MultipartFile[] files, String directory, DirectoryType dirType);
 

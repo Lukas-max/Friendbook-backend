@@ -5,13 +5,14 @@ import luke.friendbook.connection.model.PrivateChatMessage;
 import luke.friendbook.connection.model.PublicChatMessage;
 import luke.friendbook.connection.services.global.IPublicChatService;
 import luke.friendbook.connection.services.p2p.IChatRoomService;
-import luke.friendbook.connection.services.p2p.IPrivateChatMessageService;
+import luke.friendbook.connection.services.p2p.IPrivateChatService;
 import luke.friendbook.exception.ChatRoomException;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.simp.SimpMessageSendingOperations;
 import org.springframework.stereotype.Controller;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.HashSet;
 import java.util.Set;
@@ -22,13 +23,13 @@ public class StompController {
     private final SimpMessageSendingOperations messageTemplate;
     private final IPublicChatService publicChatService;
     private final IChatRoomService chatRoomService;
-    private final IPrivateChatMessageService privateChatMessageService;
+    private final IPrivateChatService privateChatMessageService;
     private final Set<ConnectedUser> users = new HashSet<>();
 
     public StompController(SimpMessageSendingOperations messageTemplate,
                            IPublicChatService publicChatService,
                            IChatRoomService chatRoomService,
-                           IPrivateChatMessageService privateChatMessageService) {
+                           IPrivateChatService privateChatMessageService) {
         this.messageTemplate = messageTemplate;
         this.publicChatService = publicChatService;
         this.chatRoomService = chatRoomService;
@@ -63,7 +64,8 @@ public class StompController {
 
         messageTemplate.convertAndSend("/topic/private." + privateChatMessage.getReceiverUUID(), privateChatMessage);
 
-        String encodedNotification = Base64.getEncoder().encodeToString(privateChatMessage.getContent().getBytes());
+        String encodedNotification = Base64.getEncoder()
+                .encodeToString(privateChatMessage.getContent().getBytes(StandardCharsets.UTF_8));
         privateChatMessage.setContent(encodedNotification);
         privateChatMessage.setChatId(chatId);
         privateChatMessageService.save(privateChatMessage);

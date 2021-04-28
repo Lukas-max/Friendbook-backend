@@ -1,20 +1,20 @@
 package luke.friendbook.connection.services.p2p;
 
 import luke.friendbook.connection.model.PrivateChatMessage;
+import luke.friendbook.model.Chunk;
 import org.springframework.stereotype.Service;
 
 import java.util.Collections;
-import java.util.List;
 import java.util.Optional;
 
 @Service
-public class PrivateChatMessageService implements IPrivateChatMessageService{
+public class PrivateChatService implements IPrivateChatService {
 
-    private final IPrivateChatMessageRepository privateChatMessageRepository;
+    private final IPrivateChatRepository privateChatMessageRepository;
     private final IChatRoomService chatRoomService;
 
-    public PrivateChatMessageService(IPrivateChatMessageRepository privateChatMessageRepository,
-                                     IChatRoomService chatRoomService) {
+    public PrivateChatService(IPrivateChatRepository privateChatMessageRepository,
+                              IChatRoomService chatRoomService) {
         this.privateChatMessageRepository = privateChatMessageRepository;
         this.chatRoomService = chatRoomService;
     }
@@ -26,13 +26,13 @@ public class PrivateChatMessageService implements IPrivateChatMessageService{
     }
 
     @Override
-    public List<PrivateChatMessage> findChatMessages(String senderUUID, String receiverUUID) {
+    public Chunk<PrivateChatMessage> findChatMessages(String senderUUID, String receiverUUID, int limit, long offset) {
         Optional<String> chatId = chatRoomService.getChatId(senderUUID, receiverUUID, false);
 
         if (chatId.isEmpty())
-            return Collections.emptyList();
+            return new Chunk<>(limit, offset, Collections.emptyList());
 
-        return privateChatMessageRepository.findByChatId(chatId.get());
+        return privateChatMessageRepository.findChunk(limit, offset, chatId.get());
     }
 }
 

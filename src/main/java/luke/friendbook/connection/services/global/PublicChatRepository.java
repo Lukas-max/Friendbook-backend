@@ -1,11 +1,13 @@
 package luke.friendbook.connection.services.global;
 
 import luke.friendbook.connection.model.PublicChatMessage;
+import luke.friendbook.model.Chunk;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
+import javax.persistence.Query;
 import javax.persistence.TypedQuery;
 import java.util.List;
 import java.util.Optional;
@@ -21,6 +23,18 @@ public class PublicChatRepository implements IPublicChatRepository{
         final String query = "SELECT m FROM PublicChatMessage m";
         TypedQuery<PublicChatMessage> userTypedQuery = entityManager.createQuery(query, PublicChatMessage.class);
         return userTypedQuery.getResultList();
+    }
+
+    @Override
+    public Chunk<PublicChatMessage> findChunk(int limit, long offset) {
+        final String query = "SELECT * FROM public_chat ORDER BY id DESC LIMIT ?1 OFFSET ?2";
+        Query chatQuery =  entityManager.createNativeQuery(query, PublicChatMessage.class)
+                .setParameter(1, limit)
+                .setParameter(2, offset);
+
+        @SuppressWarnings("unchecked")
+        List<PublicChatMessage> chatMessageList = (List<PublicChatMessage>) chatQuery.getResultList();
+        return new Chunk<>(limit, offset, chatMessageList);
     }
 
     @Override

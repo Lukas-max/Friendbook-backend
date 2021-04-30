@@ -113,7 +113,6 @@ public class UserRepository implements IUserRepository, UserDetailsService {
             entityManager.remove(user);
             return true;
         }
-
         return false;
     }
 

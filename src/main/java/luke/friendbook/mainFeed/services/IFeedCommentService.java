@@ -5,7 +5,9 @@ import luke.friendbook.model.Chunk;
 
 public interface IFeedCommentService {
 
-    Chunk<FeedComment> findFeedCommentChunk(long feedId, int limit, long offset);
+    Chunk<FeedComment> findCommentChunk(long feedId, int limit, long offset);
 
-    void saveComment(FeedComment feedComment);
+    FeedComment saveComment(FeedComment feedComment);
+
+    void deleteCommentById(Long id);
 }

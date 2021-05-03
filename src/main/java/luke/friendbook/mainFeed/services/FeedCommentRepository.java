@@ -13,6 +13,7 @@ import java.sql.Timestamp;
 import java.util.List;
 import java.util.Optional;
 
+
 @Repository
 public class FeedCommentRepository implements IFeedCommentRepository {
 
@@ -52,8 +53,7 @@ public class FeedCommentRepository implements IFeedCommentRepository {
     @Override
     @Transactional
     public FeedComment save(FeedComment feedComment) {
-        em.persist(feedComment);
-        return feedComment;
+        return em.merge(feedComment);
     }
 
     @Override

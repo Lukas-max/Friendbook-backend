@@ -1,14 +1,16 @@
 package luke.friendbook.connection.services.p2p;
 
+import luke.friendbook.connection.model.MessageStatus;
 import luke.friendbook.connection.model.PrivateChatMessage;
-import luke.friendbook.connection.model.PublicChatMessage;
 import luke.friendbook.model.Chunk;
+import luke.friendbook.utilities.Utils;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
+import javax.persistence.TypedQuery;
 import java.util.List;
 
 @Repository
@@ -40,9 +42,34 @@ public class PrivateChatRepository implements IPrivateChatRepository {
     }
 
     @Override
+    public List<PrivateChatMessage> findPendingMessages() {
+        String userUUID = Utils.getAuthenticatedUser().getUser().getUserUUID();
+        final String query = "SELECT m FROM PrivateChatMessage m WHERE m.receiverUUID = ?1 AND m.status = ?2";
+        TypedQuery<PrivateChatMessage> typedQuery = entityManager.createQuery(query, PrivateChatMessage.class)
+                .setParameter(1, userUUID)
+                .setParameter(2, MessageStatus.PENDING);
+
+        return typedQuery.getResultList();
+    }
+
+    @Override
     @Transactional
     public PrivateChatMessage save(PrivateChatMessage privateChatMessage) {
         entityManager.persist(privateChatMessage);
         return privateChatMessage;
+    }
+
+    @Override
+    @Transactional
+    public void updateMessagesToReceivedStatus(String chatId, String userUUID) {
+        final String stringQuery = "UPDATE PrivateChatMessage m SET m.status = ?1 " +
+                "WHERE m.chatId = ?2 AND m.receiverUUID = ?3 AND m.status = ?4";
+        Query query = entityManager.createQuery(stringQuery)
+                .setParameter(1, MessageStatus.RECEIVED)
+                .setParameter(2, chatId)
+                .setParameter(3, userUUID)
+                .setParameter(4, MessageStatus.PENDING);
+
+        query.executeUpdate();
     }
 }

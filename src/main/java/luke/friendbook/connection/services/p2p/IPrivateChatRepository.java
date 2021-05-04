@@ -11,5 +11,9 @@ public interface IPrivateChatRepository {
 
     Chunk<PrivateChatMessage> findChunk(int limit, long offset, String chatId);
 
+    List<PrivateChatMessage> findPendingMessages();
+
     PrivateChatMessage save(PrivateChatMessage privateChatMessage);
+
+    void updateMessagesToReceivedStatus(String chatId, String userUUID);
 }

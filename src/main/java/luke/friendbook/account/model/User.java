@@ -45,6 +45,9 @@ public class User implements Serializable {
     @Column(name = "locked", nullable = false)
     private boolean isLocked;
 
+    @Column(name = "logged", nullable = false)
+    private boolean isLogged;
+
     @Column(name = "account_created_time")
     private LocalDateTime accountCreatedTime;
 
@@ -64,6 +67,7 @@ public class User implements Serializable {
         this.password = user.password;
         this.isActive = user.isActive;
         this.isLocked = user.isLocked;
+        this.isLogged = user.isLogged;
         this.accountCreatedTime = user.accountCreatedTime;
         this.roles = new HashSet<>(user.getRoles());
     }

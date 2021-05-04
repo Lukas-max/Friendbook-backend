@@ -14,11 +14,9 @@ import java.util.List;
 public class UserService implements IUserService {
 
     private final UserRepository userRepository;
-    private final ModelMapper mapper;
 
-    public UserService(UserRepository userRepository, ModelMapper mapper) {
+    public UserService(UserRepository userRepository) {
         this.userRepository = userRepository;
-        this.mapper = mapper;
     }
 
     @Override
@@ -30,11 +28,17 @@ public class UserService implements IUserService {
     }
 
     @Override
-    public UserResponseModel getUserByUUID(String uuid) {
-        User user = userRepository.findByUuid(uuid).orElseThrow(() ->
+    public User getUserByUUID(String uuid) {
+        return userRepository.findByUuid(uuid).orElseThrow(() ->
                 new NotFoundException("Nie znalazłem użytkownika po numerz UUID"));
+    }
 
-        return mapper.map(user, UserResponseModel.class);
+    @Override
+    public void updateUserStatus(String userUUID, boolean logged) {
+        if (logged)
+            userRepository.setUserStatusToLoggedIn(userUUID);
+        else
+            userRepository.setUserStatusToLoggedOut(userUUID);
     }
 }
 

@@ -1,8 +1,10 @@
 package luke.friendbook.connection.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import luke.friendbook.account.model.User;
 
 import javax.persistence.*;
 import java.sql.Timestamp;
@@ -39,4 +41,8 @@ public class PrivateChatMessage {
 
     @Column(name = "timestamp")
     private Timestamp timestamp;
+
+    @Column(name = "status")
+    @Enumerated(EnumType.STRING)
+    private MessageStatus status;
 }

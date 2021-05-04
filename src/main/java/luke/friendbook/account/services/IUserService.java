@@ -9,5 +9,7 @@ public interface IUserService {
 
     List<UserResponseModel> getAllUsers();
 
-    UserResponseModel getUserByUUID(String uuid);
+    User getUserByUUID(String uuid);
+
+    void updateUserStatus(String userUUID, boolean logged);
 }

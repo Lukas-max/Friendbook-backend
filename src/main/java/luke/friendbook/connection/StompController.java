@@ -1,5 +1,6 @@
 package luke.friendbook.connection;
 
+import luke.friendbook.account.services.IUserService;
 import luke.friendbook.connection.model.ConnectedUser;
 import luke.friendbook.connection.model.PrivateChatMessage;
 import luke.friendbook.connection.model.PublicChatMessage;
@@ -23,28 +24,33 @@ public class StompController {
     private final SimpMessageSendingOperations messageTemplate;
     private final IPublicChatService publicChatService;
     private final IChatRoomService chatRoomService;
-    private final IPrivateChatService privateChatMessageService;
+    private final IPrivateChatService privateChatService;
+    private final IUserService userService;
     private final Set<ConnectedUser> users = new HashSet<>();
 
     public StompController(SimpMessageSendingOperations messageTemplate,
                            IPublicChatService publicChatService,
                            IChatRoomService chatRoomService,
-                           IPrivateChatService privateChatMessageService) {
+                           IPrivateChatService privateChatService,
+                           IUserService userService) {
         this.messageTemplate = messageTemplate;
         this.publicChatService = publicChatService;
         this.chatRoomService = chatRoomService;
-        this.privateChatMessageService = privateChatMessageService;
+        this.privateChatService = privateChatService;
+        this.userService = userService;
     }
 
     @MessageMapping("/logged")
     public void connectMessage(@Payload ConnectedUser connectedUser) {
         users.add(connectedUser);
+        userService.updateUserStatus(connectedUser.getUserUUID(), true);
         messageTemplate.convertAndSend("/topic/connection", users);
     }
 
     @MessageMapping("/exit")
     public void exitConnectionMessage(@Payload ConnectedUser connectedUser) {
         users.remove(connectedUser);
+        userService.updateUserStatus(connectedUser.getUserUUID(), false);
         messageTemplate.convertAndSend("/topic/connection", users);
     }
 
@@ -68,7 +74,7 @@ public class StompController {
                 .encodeToString(privateChatMessage.getContent().getBytes(StandardCharsets.UTF_8));
         privateChatMessage.setContent(encodedNotification);
         privateChatMessage.setChatId(chatId);
-        privateChatMessageService.save(privateChatMessage);
+        privateChatService.save(privateChatMessage);
     }
 }
 

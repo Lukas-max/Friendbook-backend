@@ -33,12 +33,9 @@ public class FileController {
                                                   @RequestParam String directory,
                                                   @RequestParam String limit,
                                                   @RequestParam String offset) throws IOException {
-        String decodedUUID = new String(Base64.getDecoder().decode(userUUID.getBytes()));
-        String decodedDirectory = new String(Base64.getDecoder().decode(directory.getBytes()));
-
         Chunk<FileData> fileChunk = fileStorage.findFilesChunk(
-                decodedUUID,
-                decodedDirectory,
+                userUUID,
+                directory,
                 Integer.parseInt(limit),
                 Integer.parseInt(offset));
 

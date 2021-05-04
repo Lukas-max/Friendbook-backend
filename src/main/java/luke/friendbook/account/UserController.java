@@ -1,7 +1,9 @@
 package luke.friendbook.account;
 
+import luke.friendbook.account.model.User;
 import luke.friendbook.account.model.UserResponseModel;
 import luke.friendbook.account.services.IUserService;
+import org.modelmapper.ModelMapper;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -25,7 +27,9 @@ public class UserController {
 
     @GetMapping("/{uuid}")
     public ResponseEntity<UserResponseModel> getUserByUUID(@PathVariable String uuid) {
-        return ResponseEntity.status(HttpStatus.OK).body(userService.getUserByUUID(uuid));
+        User user = userService.getUserByUUID(uuid);
+        UserResponseModel userResponseModel = new ModelMapper().map(user, UserResponseModel.class);
+        return ResponseEntity.status(HttpStatus.OK).body(userResponseModel);
     }
 }
 

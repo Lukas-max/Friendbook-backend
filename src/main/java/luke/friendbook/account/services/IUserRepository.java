@@ -13,4 +13,8 @@ public interface IUserRepository extends Repository<User> {
     Optional<User> findByEmail(String email);
 
     Optional<User> findByUuid(String userUUID);
+
+    void setUserStatusToLoggedIn(String userUUID);
+
+    void setUserStatusToLoggedOut(String userUUID);
 }

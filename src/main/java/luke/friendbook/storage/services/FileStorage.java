@@ -1,18 +1,17 @@
 package luke.friendbook.storage.services;
 
-import luke.friendbook.model.Chunk;
 import luke.friendbook.account.model.User;
 import luke.friendbook.account.services.IUserRepository;
 import luke.friendbook.exception.*;
+import luke.friendbook.model.Chunk;
 import luke.friendbook.security.model.SecurityContextUser;
 import luke.friendbook.storage.model.DirectoryType;
 import luke.friendbook.storage.model.FileData;
+import luke.friendbook.storage.model.FileQuality;
 import luke.friendbook.utilities.Utils;
 import org.apache.tika.Tika;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.util.FileSystemUtils;
 import org.springframework.web.multipart.MultipartFile;
@@ -31,8 +30,13 @@ public class FileStorage implements IFileStorage {
 
     private final Path imageDir = Paths.get("images");
     private final Path mainDir = Paths.get("users");
+    private final Path profileDir = Paths.get("profile-photo");
+
     private final Path storageDir = Paths.get("pliki");
     private final Path otherDir = Paths.get("inne");
+    private final Path lowQualityProfile = Paths.get("low");
+    private final Path highQualityProfile = Paths.get("high");
+
     private final IUserRepository userRepository;
     private final Tika tika;
     private final Logger log = LoggerFactory.getLogger(FileStorage.class);
@@ -50,6 +54,7 @@ public class FileStorage implements IFileStorage {
         int userDirCreated = 0;
         Files.createDirectory(mainDir);
         Files.createDirectory(imageDir);
+        Files.createDirectory(profileDir);
 
         String dir = Paths.get("").toAbsolutePath().toString();
         System.out.println("ABSOLUTE: " + dir);
@@ -64,6 +69,11 @@ public class FileStorage implements IFileStorage {
             Files.createDirectory(imageDir.resolve(userPath));
             Files.createDirectory(imageDir.resolve(userPath).resolve(storageDir));
             Files.createDirectory(imageDir.resolve(userPath).resolve(otherDir));
+
+            Path userProfilePath = Paths.get(user.getUserUUID());
+            Files.createDirectory(profileDir.resolve(userProfilePath));
+            Files.createDirectory(profileDir.resolve(userProfilePath).resolve(lowQualityProfile));
+            Files.createDirectory(profileDir.resolve(userProfilePath).resolve(highQualityProfile));
 
             ++userDirCreated;
         }
@@ -94,6 +104,33 @@ public class FileStorage implements IFileStorage {
             e.printStackTrace();
             throw new FileUnreadableException("Nie da się odczytać pliku " + fileName);
         }
+    }
+
+    @Override
+    public byte[] downloadProfilePhoto(String userUUID, FileQuality quality) throws IOException {
+        Path profilePhoto;
+
+        if (quality.equals(FileQuality.HIGH)) {
+            profilePhoto = profileDir
+                    .resolve(userUUID)
+                    .resolve(highQualityProfile);
+        } else {
+            profilePhoto = profileDir
+                            .resolve(userUUID)
+                            .resolve(lowQualityProfile);
+        }
+
+        String fileName = Files
+                .list(profilePhoto)
+                .toArray(Path[]::new)
+                [0].getFileName()
+                .toString();
+        profilePhoto.resolve(fileName);
+
+        if (!Files.isRegularFile(profilePhoto) || !Files.isReadable(profilePhoto))
+            throw new NotFoundException("Nie można znaleźć pliku " + fileName);
+
+        return Files.readAllBytes(profilePhoto);
     }
 
     @Override
@@ -174,8 +211,7 @@ public class FileStorage implements IFileStorage {
     }
 
     private String resolveAuthenticatedUserFolder() {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        SecurityContextUser contextUser = (SecurityContextUser) auth.getPrincipal();
+        SecurityContextUser contextUser = Utils.getAuthenticatedUser();
 
         if (contextUser == null)
             throw new UserUnauthorizedException("Brak dostępu. Brak uwierzytelnionego użytkownika.");
@@ -298,6 +334,8 @@ public class FileStorage implements IFileStorage {
     @Override
     public void cleanAll() throws IOException {
         FileSystemUtils.deleteRecursively(mainDir);
+        FileSystemUtils.deleteRecursively(imageDir);
+        FileSystemUtils.deleteRecursively(profileDir);
         log.info("FileStorage - cleaned all files and directories.");
     }
 }

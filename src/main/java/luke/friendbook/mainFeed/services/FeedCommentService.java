@@ -38,4 +38,9 @@ public class FeedCommentService implements IFeedCommentService {
         else
             throw new UserUnauthorizedException("Nie masz dostępu do usunięcia tego komentarza");
     }
+
+    @Override
+    public void deleteAllCommentsByFeed(Long feedId) {
+        feedCommentRepository.deleteCommentsFromFeed(feedId);
+    }
 }

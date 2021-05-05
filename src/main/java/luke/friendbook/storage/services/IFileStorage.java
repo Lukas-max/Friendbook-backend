@@ -4,6 +4,7 @@ import luke.friendbook.model.Chunk;
 import luke.friendbook.account.model.User;
 import luke.friendbook.storage.model.DirectoryType;
 import luke.friendbook.storage.model.FileData;
+import luke.friendbook.storage.model.FileQuality;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
@@ -14,6 +15,8 @@ public interface IFileStorage {
     void init() throws IOException;
 
     byte[] download(String userUUID, String directory, String fileName, DirectoryType dirType);
+
+    byte[] downloadProfilePhoto(String userUUID, FileQuality quality) throws IOException;
 
     File[] findDirectories(String userUUID);
 

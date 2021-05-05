@@ -10,4 +10,6 @@ public interface IFeedCommentService {
     FeedComment saveComment(FeedComment feedComment);
 
     void deleteCommentById(Long id);
+
+    void deleteAllCommentsByFeed(Long feedId);
 }

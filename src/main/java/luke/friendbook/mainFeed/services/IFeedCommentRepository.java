@@ -7,4 +7,6 @@ import luke.friendbook.model.Repository;
 public interface IFeedCommentRepository extends Repository<FeedComment> {
 
     Chunk<FeedComment> findChunk(long feedId, int limit, long offset);
+
+    void deleteCommentsFromFeed(Long feedId);
 }

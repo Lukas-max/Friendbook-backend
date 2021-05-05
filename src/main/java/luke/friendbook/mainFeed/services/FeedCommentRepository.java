@@ -85,4 +85,13 @@ public class FeedCommentRepository implements IFeedCommentRepository {
         return false;
     }
 
+    @Override
+    @Transactional
+    public void deleteCommentsFromFeed(Long feedId) {
+        final String query = "DELETE FROM FeedComment c WHERE c.feedId = ?1";
+        Query deleteQuery = em.createQuery(query)
+                .setParameter(1, feedId);
+
+        deleteQuery.executeUpdate();
+    }
 }

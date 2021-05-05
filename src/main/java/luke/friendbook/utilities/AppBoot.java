@@ -42,7 +42,7 @@ public class AppBoot {
     @EventListener
     public void onApplicationContextInitialization(ContextRefreshedEvent event) throws IOException {
         bootstrapDatabase();
-//        fileStorage.init();
+        fileStorage.init();
         feedStorage.init();
     }
 

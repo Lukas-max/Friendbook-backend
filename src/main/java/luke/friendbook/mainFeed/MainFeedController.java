@@ -1,5 +1,6 @@
 package luke.friendbook.mainFeed;
 
+import luke.friendbook.mainFeed.services.IFeedCommentService;
 import luke.friendbook.model.Chunk;
 import luke.friendbook.mainFeed.model.FeedModelDto;
 import luke.friendbook.mainFeed.services.IFeedService;
@@ -17,10 +18,14 @@ import java.io.IOException;
 public class MainFeedController {
 
     private final IFeedService feedService;
+    private final IFeedCommentService commentService;
     private final SimpMessageSendingOperations messageTemplate;
 
-    public MainFeedController(IFeedService feedService, SimpMessageSendingOperations messageTemplate) {
+    public MainFeedController(IFeedService feedService,
+                              IFeedCommentService commentService,
+                              SimpMessageSendingOperations messageTemplate) {
         this.feedService = feedService;
+        this.commentService = commentService;
         this.messageTemplate = messageTemplate;
     }
 
@@ -78,6 +83,7 @@ public class MainFeedController {
     @DeleteMapping("/{feedId}")
     public ResponseEntity<?> deleteFeed(@PathVariable String feedId) {
         feedService.deleteFeed(feedId);
+        commentService.deleteAllCommentsByFeed(Long.parseLong(feedId));
         messageTemplate.convertAndSend("/topic/delete-feed",feedId);
         return ResponseEntity.ok().build();
     }

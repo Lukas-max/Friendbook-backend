@@ -3,6 +3,7 @@ package luke.friendbook.storage;
 import luke.friendbook.model.Chunk;
 import luke.friendbook.storage.model.DirectoryType;
 import luke.friendbook.storage.model.FileData;
+import luke.friendbook.storage.model.FileQuality;
 import luke.friendbook.storage.services.IFileStorage;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
@@ -11,7 +12,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Base64;
 
 @RestController
 @RequestMapping("/api/storage")
@@ -62,6 +62,20 @@ public class FileController {
         return ResponseEntity.ok()
                 .header(HttpHeaders.CONTENT_DISPOSITION, "dodano plik " + fileName)
                 .body(data);
+    }
+
+    @GetMapping("/profile/high-quality")
+    public ResponseEntity<byte[]> downloadProfileHighQuality(@RequestParam String userUUID) throws IOException {
+        byte[] profilePhoto = fileStorage.downloadProfilePhoto(userUUID, FileQuality.HIGH);
+
+        return ResponseEntity.ok().body(profilePhoto);
+    }
+
+    @GetMapping("/profile/low-quality")
+    public ResponseEntity<byte[]> downloadProfileLowQuality(@RequestParam String userUUID) throws IOException {
+        byte[] profilePhoto = fileStorage.downloadProfilePhoto(userUUID, FileQuality.LOW);
+
+        return ResponseEntity.ok().body(profilePhoto);
     }
 
     @PostMapping

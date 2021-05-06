@@ -1,6 +1,7 @@
 package luke.friendbook.storage;
 
 import luke.friendbook.model.Chunk;
+import luke.friendbook.storage.model.BytePackage;
 import luke.friendbook.storage.model.DirectoryType;
 import luke.friendbook.storage.model.FileData;
 import luke.friendbook.storage.model.FileQuality;
@@ -30,9 +31,9 @@ public class FileController {
 
     @GetMapping("/files")
     public ResponseEntity<Chunk<FileData>> getFileData(@RequestParam String userUUID,
-                                                  @RequestParam String directory,
-                                                  @RequestParam String limit,
-                                                  @RequestParam String offset) throws IOException {
+                                                       @RequestParam String directory,
+                                                       @RequestParam String limit,
+                                                       @RequestParam String offset) throws IOException {
         Chunk<FileData> fileChunk = fileStorage.findFilesChunk(
                 userUUID,
                 directory,
@@ -55,8 +56,8 @@ public class FileController {
 
     @GetMapping("/image/{id:.+}/{directory:.+}/{fileName:.+}")
     public ResponseEntity<byte[]> downloadImage(@PathVariable String id,
-                                               @PathVariable String directory,
-                                               @PathVariable String fileName) {
+                                                @PathVariable String directory,
+                                                @PathVariable String fileName) {
         byte[] data = fileStorage.download(id, directory, fileName, DirectoryType.IMAGE_DIRECTORY);
 
         return ResponseEntity.ok()
@@ -64,18 +65,18 @@ public class FileController {
                 .body(data);
     }
 
-    @GetMapping("/profile/high-quality")
-    public ResponseEntity<byte[]> downloadProfileHighQuality(@RequestParam String userUUID) throws IOException {
+    @GetMapping("/profile/high-quality/{userUUID}")
+    public ResponseEntity<BytePackage> downloadProfileHighQuality(@PathVariable String userUUID) throws IOException {
         byte[] profilePhoto = fileStorage.downloadProfilePhoto(userUUID, FileQuality.HIGH);
 
-        return ResponseEntity.ok().body(profilePhoto);
+        return ResponseEntity.ok().body(new BytePackage(profilePhoto));
     }
 
-    @GetMapping("/profile/low-quality")
-    public ResponseEntity<byte[]> downloadProfileLowQuality(@RequestParam String userUUID) throws IOException {
+    @GetMapping("/profile/low-quality/{userUUID}")
+    public ResponseEntity<BytePackage> downloadProfileLowQuality(@PathVariable String userUUID) throws IOException {
         byte[] profilePhoto = fileStorage.downloadProfilePhoto(userUUID, FileQuality.LOW);
 
-        return ResponseEntity.ok().body(profilePhoto);
+        return ResponseEntity.ok().body(new BytePackage(profilePhoto));
     }
 
     @PostMapping
@@ -88,6 +89,12 @@ public class FileController {
     public ResponseEntity<Integer> uploadImages(@RequestBody MultipartFile[] files, @RequestParam String directory) {
         int length = fileStorage.save(files, directory, DirectoryType.IMAGE_DIRECTORY);
         return ResponseEntity.ok().body(length);
+    }
+
+    @PostMapping("/profile")
+    public ResponseEntity<?> uploadProfilePhoto(@RequestBody MultipartFile photo) {
+        fileStorage.changeProfilePhoto(photo);
+        return ResponseEntity.ok().build();
     }
 
     @PostMapping("/directory")
@@ -105,6 +112,12 @@ public class FileController {
     @DeleteMapping("/{directory}/{fileName}")
     public ResponseEntity<?> deleteFile(@PathVariable String directory, @PathVariable String fileName) {
         fileStorage.deleteFile(directory, fileName);
+        return ResponseEntity.ok().build();
+    }
+
+    @DeleteMapping("/profile")
+    public ResponseEntity<?> deleteProfilePhoto() {
+        fileStorage.deleteProfilePhoto();
         return ResponseEntity.ok().build();
     }
 }

@@ -28,14 +28,14 @@ import java.util.List;
 @Service
 public class FileStorage implements IFileStorage {
 
-    private final Path imageDir = Paths.get("images");
-    private final Path mainDir = Paths.get("users");
-    private final Path profileDir = Paths.get("profile-photo");
+    private final Path imageDir = Path.of("images");
+    private final Path mainDir = Path.of("users");
+    private final Path profileDir = Path.of("profile-photo");
 
-    private final Path storageDir = Paths.get("pliki");
-    private final Path otherDir = Paths.get("inne");
-    private final Path lowQualityProfile = Paths.get("low");
-    private final Path highQualityProfile = Paths.get("high");
+    private final Path storageDir = Path.of("pliki");
+    private final Path otherDir = Path.of("inne");
+    private final Path lowQualityProfile = Path.of("low");
+    private final Path highQualityProfile = Path.of("high");
 
     private final IUserRepository userRepository;
     private final Tika tika;
@@ -61,7 +61,7 @@ public class FileStorage implements IFileStorage {
 
         List<User> users = userRepository.findAll();
         for (User user : users) {
-            Path userPath = Paths.get(user.getUserId().toString());
+            Path userPath = Path.of(user.getUserId().toString());
             Files.createDirectory(mainDir.resolve(userPath));
             Files.createDirectory(mainDir.resolve(userPath).resolve(storageDir));
             Files.createDirectory(mainDir.resolve(userPath).resolve(otherDir));
@@ -70,7 +70,7 @@ public class FileStorage implements IFileStorage {
             Files.createDirectory(imageDir.resolve(userPath).resolve(storageDir));
             Files.createDirectory(imageDir.resolve(userPath).resolve(otherDir));
 
-            Path userProfilePath = Paths.get(user.getUserUUID());
+            Path userProfilePath = Path.of(user.getUserUUID());
             Files.createDirectory(profileDir.resolve(userProfilePath));
             Files.createDirectory(profileDir.resolve(userProfilePath).resolve(lowQualityProfile));
             Files.createDirectory(profileDir.resolve(userProfilePath).resolve(highQualityProfile));
@@ -82,18 +82,11 @@ public class FileStorage implements IFileStorage {
 
     @Override
     public byte[] download(String id, String directory, String fileName, DirectoryType dirType) {
-        Path file;
-        if (dirType == DirectoryType.STANDARD_DIRECTORY) {
-            file = mainDir
-                    .resolve(id)
-                    .resolve(directory)
-                    .resolve(fileName);
-        } else {
-            file = imageDir
-                    .resolve(id)
-                    .resolve(directory)
-                    .resolve(fileName);
-        }
+        Path rootDir = dirType == DirectoryType.STANDARD_DIRECTORY ? mainDir : imageDir;
+        Path file = rootDir
+                .resolve(id)
+                .resolve(directory)
+                .resolve(fileName);
 
         if (!Files.isRegularFile(file) || !Files.isReadable(file))
             throw new NotFoundException("Nie można znaleźć pliku " + fileName);
@@ -108,24 +101,24 @@ public class FileStorage implements IFileStorage {
 
     @Override
     public byte[] downloadProfilePhoto(String userUUID, FileQuality quality) throws IOException {
-        Path profilePhoto;
+        Path qualityDir = quality == FileQuality.HIGH ? highQualityProfile : lowQualityProfile;
+        Path path = profileDir
+                .resolve(userUUID)
+                .resolve(qualityDir);
 
-        if (quality.equals(FileQuality.HIGH)) {
-            profilePhoto = profileDir
-                    .resolve(userUUID)
-                    .resolve(highQualityProfile);
-        } else {
-            profilePhoto = profileDir
-                            .resolve(userUUID)
-                            .resolve(lowQualityProfile);
-        }
+        String fileName;
+        Path[] paths = Files
+                .list(path)
+                .toArray(Path[]::new);
 
-        String fileName = Files
-                .list(profilePhoto)
-                .toArray(Path[]::new)
-                [0].getFileName()
-                .toString();
-        profilePhoto.resolve(fileName);
+        if (paths.length == 0)
+            return new byte[]{};
+
+        fileName = paths[0].toFile().getName();
+        Path profilePhoto = profileDir
+                .resolve(userUUID)
+                .resolve(qualityDir)
+                .resolve(fileName);
 
         if (!Files.isRegularFile(profilePhoto) || !Files.isReadable(profilePhoto))
             throw new NotFoundException("Nie można znaleźć pliku " + fileName);
@@ -204,6 +197,41 @@ public class FileStorage implements IFileStorage {
             fileDataList.add(fileData);
         }
         return new Chunk<>(limit, offset, fileDataList);
+    }
+
+    @Override
+    public void changeProfilePhoto(MultipartFile file) {
+        deleteProfilePhoto();
+        saveProfilePhoto(file);
+    }
+
+    @Override
+    public void deleteProfilePhoto() {
+        String userUUID = Utils.getAuthenticatedUser().getUser().getUserUUID();
+        Path deletePath = profileDir
+                .resolve(userUUID)
+                .resolve(lowQualityProfile);
+        File dir = new File(deletePath.toUri());
+
+        for (File file : dir.listFiles()) {
+            if (file.isFile())
+                file.delete();
+        }
+    }
+
+    private void saveProfilePhoto(MultipartFile file) {
+        String userUUID = Utils.getAuthenticatedUser().getUser().getUserUUID();
+        Path path = profileDir
+                .resolve(userUUID)
+                .resolve(lowQualityProfile);
+
+        try {
+            Files.copy(file.getInputStream(), path.resolve(file.getOriginalFilename()));
+        } catch (IOException e) {
+            log.error(e.getLocalizedMessage());
+            e.printStackTrace();
+            throw new FileNotStoredException(e.getLocalizedMessage());
+        }
     }
 
     private String getDirectory(String userUUID) {
@@ -315,7 +343,7 @@ public class FileStorage implements IFileStorage {
     @Override
     public void createRegisteredUserStorageDirectory(User user) {
         try {
-            Path newUserPath = Paths.get(user.getUserId().toString());
+            Path newUserPath = Path.of(user.getUserId().toString());
             Files.createDirectory(mainDir.resolve(newUserPath));
             Files.createDirectory(mainDir.resolve(newUserPath).resolve(storageDir));
             Files.createDirectory(mainDir.resolve(newUserPath).resolve(otherDir));
@@ -323,6 +351,11 @@ public class FileStorage implements IFileStorage {
             Files.createDirectory(imageDir.resolve(newUserPath));
             Files.createDirectory(imageDir.resolve(newUserPath).resolve(storageDir));
             Files.createDirectory(imageDir.resolve(newUserPath).resolve(otherDir));
+
+            Path userProfilePath = Path.of(user.getUserUUID());
+            Files.createDirectory(profileDir.resolve(userProfilePath));
+            Files.createDirectory(profileDir.resolve(userProfilePath).resolve(lowQualityProfile));
+            Files.createDirectory(profileDir.resolve(userProfilePath).resolve(highQualityProfile));
         } catch (IOException e) {
             e.printStackTrace();
             throw new DirectoryCreationFailException("Nie mogłem utworzyć folderu dla plików. " +

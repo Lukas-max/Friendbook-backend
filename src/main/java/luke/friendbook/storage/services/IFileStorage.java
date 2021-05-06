@@ -24,6 +24,10 @@ public interface IFileStorage {
 
     Chunk<FileData> findFilesChunk(String userUUID, String directory, int limit, int offset) throws IOException;
 
+    void changeProfilePhoto(MultipartFile file);
+
+    void deleteProfilePhoto();
+
     int save(MultipartFile[] files, String directory, DirectoryType dirType);
 
     void createFolder(String directory);

@@ -1,50 +1,47 @@
 package luke.friendbook.account;
 
+import luke.friendbook.account.model.UserRequestModel;
 import luke.friendbook.account.model.UserResponseModel;
 import luke.friendbook.account.services.IAccountService;
-import luke.friendbook.account.model.UserRequestModel;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContext;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/account")
 public class AccountController{
 
-    private final IAccountService userService;
+    private final IAccountService accountService;
 
-    public AccountController(IAccountService userService) {
-        this.userService = userService;
-    }
-
-    @GetMapping
-    public ResponseEntity<?> test() {
-        SecurityContext context = SecurityContextHolder.getContext();
-        Authentication authentication = context.getAuthentication();
-        System.out.println("getName(): " + authentication.getName());
-        System.out.println("isAuthenticated: " +  authentication.isAuthenticated());
-        System.out.println("getPrincipal: " + authentication.getPrincipal());
-        System.out.println("roles: " +  authentication.getAuthorities().toString());
-        return ResponseEntity.ok().build();
+    public AccountController(IAccountService accountService) {
+        this.accountService = accountService;
     }
 
     @GetMapping("/email")
     public ResponseEntity<Boolean> checkIfEmailExists(@RequestParam String email) {
-        return ResponseEntity.ok().body(userService.doesEmailExist(email));
+        return ResponseEntity.ok().body(accountService.doesEmailExist(email));
+    }
+
+    @GetMapping("/reset-request")
+    public void resetPasswordRequest(@RequestParam String email) {
+        accountService.sendResetPasswordEmail(email);
+    }
+
+    @PutMapping("/reset-password")
+    public void resetPassword(@RequestBody String token) {
+        accountService.resetPasswordAndNotify(token);
     }
 
     @PostMapping("/register")
     public ResponseEntity<UserResponseModel> register(@RequestBody UserRequestModel userRequestModel) {
-        UserResponseModel savedUser = userService.register(userRequestModel);
+        UserResponseModel savedUser = accountService.register(userRequestModel);
         return ResponseEntity.ok().body(savedUser);
     }
 
     @PostMapping("/confirm-account")
     public void confirmAccount(@RequestBody String tokenUUID) {
-        userService.confirmRegistration(tokenUUID);
+        accountService.confirmRegistration(tokenUUID);
     }
+
 }
 
 

@@ -16,11 +16,12 @@ import org.thymeleaf.context.Context;
 
 import java.time.LocalDateTime;
 import java.util.Base64;
+import java.util.Optional;
 
 @Service
 public class AccountService implements IAccountService {
 
-    private final IUserRepository userDao;
+    private final IUserRepository userRepository;
     private final IRegistrationTokenRepository registrationTokenRepository;
     private final IRoleRepository roleRepository;
     private final TemplateEngine templateEngine;
@@ -29,19 +30,21 @@ public class AccountService implements IAccountService {
     private final PasswordEncoder passwordEncoder;
     private final Logger log = LoggerFactory.getLogger(this.getClass());
     @Value("${app.mail.verification.url}")
-    private String url;
+    private String verifyMailUrl;
+    @Value("${app.mail.reset-password.url}")
+    private String resetPassUrl;
     @Value("${app.mail.verification.mode}")
     private String mailMode;
 
     public AccountService(
-            IUserRepository userDao,
+            IUserRepository userRepository,
             IRegistrationTokenRepository registrationTokenRepository,
             IRoleRepository roleRepository,
             TemplateEngine templateEngine,
             IMailSender mailSender,
             IFileStorage fileStorage,
             PasswordEncoder passwordEncoder) {
-        this.userDao = userDao;
+        this.userRepository = userRepository;
         this.registrationTokenRepository = registrationTokenRepository;
         this.roleRepository = roleRepository;
         this.templateEngine = templateEngine;
@@ -63,11 +66,13 @@ public class AccountService implements IAccountService {
         validateRegistration(user);
         MailSetting mailSetting = mailMode.equals("ON") ? MailSetting.ON : MailSetting.OFF;
 
-        if (mailSetting == MailSetting.OFF) userDao.save(user);
+        if (mailSetting == MailSetting.OFF) userRepository.save(user);
         else {
-            userDao.save(user);
-            RegistrationToken registrationToken = createRegistrationToken(user);
-            sendRegistrationToken(user, registrationToken);
+            userRepository.save(user);
+            VerificationToken verificationToken = createVerificationToken(user);
+            String mailTemplate = createMailTemplate(user, verifyMailUrl, verificationToken, "registerMail");
+
+            mailSender.sendRegisterTokenTemplate(user, mailTemplate);
         }
         return new ModelMapper().map(user, UserResponseModel.class);
     }
@@ -76,36 +81,20 @@ public class AccountService implements IAccountService {
         if (user.getUserId() != null)
             throw new RegistrationException("Brak dostępu do rejestracji dla tego użytkownika.");
 
-        userDao.findByEmail(user.getEmail()).ifPresent((fetchedUser -> {
+        userRepository.findByEmail(user.getEmail()).ifPresent((fetchedUser -> {
             throw new EmailExistsException("Email " + fetchedUser.getEmail() + " już istnieje w bazie");
         }));
     }
 
-    private RegistrationToken createRegistrationToken(User user) {
-        RegistrationToken registrationToken = new RegistrationToken(user);
-        registrationToken.setUser(user);
-        registrationTokenRepository.save(registrationToken);
-        return registrationToken;
-    }
-
-    private void sendRegistrationToken(User user, RegistrationToken registrationToken) {
-        Context context = new Context();
-        context.setVariable("username", user.getUsername());
-        context.setVariable("link", url + "?token=" + registrationToken.getToken());
-        String mailContent = templateEngine.process("registerMail", context);
-
-        mailSender.sendRegisterTokenTemplate(user, mailContent);
-    }
-
     @Override
     public void confirmRegistration(String token) {
-        RegistrationToken registrationToken = findToken(token);
+        VerificationToken verificationToken = findToken(token);
 
-        if (registrationToken != null && registrationToken.getConfirmationDateTime() != null)
+        if (verificationToken != null && verificationToken.getConfirmationDateTime() != null)
             throw new RegistrationException("Konto już zostało aktywowane!");
 
-        if (registrationToken != null && registrationToken.getExpirationDateTime().isAfter(LocalDateTime.now())){
-            User user = userDao.findByEmail(registrationToken.getUser().getEmail())
+        if (verificationToken != null && verificationToken.getExpirationDateTime().isAfter(LocalDateTime.now())){
+            User user = userRepository.findByEmail(verificationToken.getUser().getEmail())
                     .orElseThrow(() ->
                             new NotFoundException("Nie znaleziono użytkownika pasującego do wysłanego tokena. " +
                                     "Błąd weryfikacji."));
@@ -113,9 +102,9 @@ public class AccountService implements IAccountService {
             user.setActive(true);
             user.setLocked(false);
             user.setAccountCreatedTime(LocalDateTime.now());
-            userDao.save(user);
-            registrationToken.setConfirmationDateTime(LocalDateTime.now());
-            registrationTokenRepository.save(registrationToken);
+            userRepository.save(user);
+            verificationToken.setConfirmationDateTime(LocalDateTime.now());
+            registrationTokenRepository.save(verificationToken);
             fileStorage.createRegisteredUserStorageDirectory(user);
         }else {
             throw new RegistrationTokenExpirationException("Upłynął czas ważności tokena aktywującego.");
@@ -123,7 +112,7 @@ public class AccountService implements IAccountService {
     }
 
 
-    private RegistrationToken findToken(String token) {
+    private VerificationToken findToken(String token) {
         return registrationTokenRepository.findByToken(token).orElseThrow(() -> {
             throw new NotFoundException("Nie znaleziono w bazie tokena.");
         });
@@ -131,7 +120,39 @@ public class AccountService implements IAccountService {
 
     @Override
     public boolean doesEmailExist(String email) {
-        return userDao.findByEmail(email).isPresent();
+        return userRepository.findByEmail(email).isPresent();
+    }
+
+    @Override
+    public void sendResetPasswordEmail(String email) {
+        Optional<User> optional = userRepository.findByEmail(email);
+
+        if(optional.isPresent()){
+            User user = optional.get();
+            VerificationToken verificationToken = createVerificationToken(user);
+            String template = createMailTemplate(user, resetPassUrl, verificationToken, "resetPassword");
+
+            mailSender.sendMail(user, template, "Prośba o reset hasła");
+        }
+    }
+
+    @Override
+    public void resetPasswordAndNotify(String token) {
+
+    }
+
+    private VerificationToken createVerificationToken(User user) {
+        VerificationToken verificationToken = new VerificationToken(user);
+        verificationToken.setUser(user);
+        registrationTokenRepository.save(verificationToken);
+        return verificationToken;
+    }
+
+    private String createMailTemplate(User user, String url, VerificationToken verificationToken, String templateForm) {
+        Context context = new Context();
+        context.setVariable("username", user.getUsername());
+        context.setVariable("link", url + "?token=" + verificationToken.getToken());
+        return templateEngine.process(templateForm, context);
     }
 
     private Role getUserRole(RoleType roleType){

@@ -11,4 +11,8 @@ public interface IAccountService {
     void confirmRegistration(String token);
 
     boolean doesEmailExist(String email);
+
+    void sendResetPasswordEmail(String email);
+
+    void resetPasswordAndNotify(String token);
 }

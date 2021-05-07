@@ -1,5 +1,6 @@
 package luke.friendbook.mailClient;
 
+import com.sun.mail.smtp.SMTPAddressFailedException;
 import luke.friendbook.exception.MailMessageFailureException;
 import luke.friendbook.account.model.User;
 import org.slf4j.Logger;
@@ -39,6 +40,23 @@ public class MailSenderService implements IMailSender {
             log.error(e.getLocalizedMessage(), e.getCause());
             throw new MailMessageFailureException("Nie udało się wysłać maila z tokenem weryfikującym." +
                     "Spróbuj jeszcze raz, albo skontaktuj się z administratorem.");
+        }
+    }
+
+    @Async
+    public void sendMail(User user, String template, String subject) {
+        MimeMessage mimeMessage = javaMailSender.createMimeMessage();
+        MimeMessageHelper messageHelper = new MimeMessageHelper(mimeMessage, "utf-8");
+
+        try {
+            messageHelper.setFrom("appapplication88@gmail.com", "FriendBook");
+            messageHelper.setTo(user.getEmail());
+            messageHelper.setText(template, true);
+            messageHelper.setSubject(subject);
+            javaMailSender.send(mimeMessage);
+            log.info("Sent email. Mail: " + user.getEmail() + " User: " + user.getUsername());
+        } catch (UnsupportedEncodingException | MessagingException e) {
+            log.error(e.getLocalizedMessage(), e.getCause());
         }
     }
 }

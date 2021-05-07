@@ -10,11 +10,11 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Entity
-@Table(name = "registration_token")
+@Table(name = "verification_token")
 @NoArgsConstructor
 @AllArgsConstructor
 @Getter
-public class RegistrationToken implements Serializable {
+public class VerificationToken implements Serializable {
     private static final long serialVersionUID = -8911203220166321286L;
 
     @Id
@@ -34,7 +34,7 @@ public class RegistrationToken implements Serializable {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    public RegistrationToken(User user) {
+    public VerificationToken(User user) {
         this.user = new User(user);
         token = UUID.randomUUID().toString();
         creationDateTime = LocalDateTime.now();

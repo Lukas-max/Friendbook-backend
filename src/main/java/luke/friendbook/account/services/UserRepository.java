@@ -108,6 +108,16 @@ public class UserRepository implements IUserRepository, UserDetailsService {
 
     @Override
     @Transactional
+    public User patchStorageSize(String userUUID, float size) {
+        User user = findByUuid(userUUID).orElseThrow(() ->
+                new NotFoundException("Nie znaleziono zalogowanego użytkownika. (UserRepository.patchStorageSize())"));
+
+        user.setStorageSize(size);
+        return user;
+    }
+
+    @Override
+    @Transactional
     public boolean deleteById(Long userId) {
         User user = entityManager.find(User.class, userId);
         if (user != null) {

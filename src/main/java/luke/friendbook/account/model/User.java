@@ -48,6 +48,9 @@ public class User implements Serializable {
     @Column(name = "logged", nullable = false)
     private boolean isLogged;
 
+    @Column(name = "storage_size")
+    private Float storageSize;
+
     @Column(name = "account_created_time")
     private LocalDateTime accountCreatedTime;
 
@@ -68,6 +71,7 @@ public class User implements Serializable {
         this.isActive = user.isActive;
         this.isLocked = user.isLocked;
         this.isLogged = user.isLogged;
+        this.storageSize = user.storageSize;
         this.accountCreatedTime = user.accountCreatedTime;
         this.roles = new HashSet<>(user.getRoles());
     }

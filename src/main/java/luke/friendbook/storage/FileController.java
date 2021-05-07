@@ -81,6 +81,7 @@ public class FileController {
 
     @PostMapping
     public ResponseEntity<Integer> uploadFiles(@RequestBody MultipartFile[] files, @RequestParam String directory) {
+        fileStorage.checkStorageSpace();
         int length = fileStorage.save(files, directory, DirectoryType.STANDARD_DIRECTORY);
         return ResponseEntity.ok().body(length);
     }

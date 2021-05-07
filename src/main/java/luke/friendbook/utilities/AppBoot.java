@@ -62,6 +62,7 @@ public class AppBoot {
                 .email("m")
                 .isActive(true)
                 .isLocked(false)
+                .storageSize(0f)
                 .accountCreatedTime(LocalDateTime.now())
                 .roles(Set.of(role))
                 .build();
@@ -74,6 +75,7 @@ public class AppBoot {
                 .email("jarogniew@o2.pl")
                 .isActive(true)
                 .isLocked(false)
+                .storageSize(0f)
                 .accountCreatedTime(LocalDateTime.now())
                 .roles(Set.of(role))
                 .build();
@@ -86,6 +88,7 @@ public class AppBoot {
                 .email("matylda@o2.pl")
                 .isActive(true)
                 .isLocked(false)
+                .storageSize(0f)
                 .accountCreatedTime(LocalDateTime.now())
                 .roles(Set.of(role))
                 .build();

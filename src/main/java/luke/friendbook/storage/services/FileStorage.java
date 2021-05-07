@@ -24,6 +24,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Stream;
 
 @Service
 public class FileStorage implements IFileStorage {
@@ -286,6 +287,8 @@ public class FileStorage implements IFileStorage {
             }
             ++savedFiles;
         }
+
+        updateUserStorageSize();
         return savedFiles;
     }
 
@@ -320,6 +323,7 @@ public class FileStorage implements IFileStorage {
             return false;
         }
 
+        updateUserStorageSize();
         return true;
     }
 
@@ -338,6 +342,8 @@ public class FileStorage implements IFileStorage {
         } catch (IOException e) {
             e.printStackTrace();
         }
+
+        updateUserStorageSize();
     }
 
     @Override
@@ -370,6 +376,37 @@ public class FileStorage implements IFileStorage {
         FileSystemUtils.deleteRecursively(imageDir);
         FileSystemUtils.deleteRecursively(profileDir);
         log.info("FileStorage - cleaned all files and directories.");
+    }
+
+    @Override
+    public void checkStorageSpace() {
+        float megaByte = Utils.getAuthenticatedUser().getUser().getStorageSize();
+        if (megaByte > 100)
+            throw new ExceededStorageException("Przekroczono dopuszczalną ilość wolnego miejsca");
+    }
+
+    private void updateUserStorageSize(){
+        String userUUID = Utils.getAuthenticatedUser().getUser().getUserUUID();
+        Long userId = Utils.getAuthenticatedUser().getUser().getUserId();
+        float size = getUserStorageSize(userId);
+        userRepository.patchStorageSize(userUUID, size);
+    }
+
+    private float getUserStorageSize(Long id) {
+        Path path = mainDir.resolve(id.toString());
+        long size = 0;
+
+        try (Stream<Path> fileWalk = Files.walk(path)) {
+            size = fileWalk
+                    .filter(Files::isRegularFile)
+                    .map(Path::toFile)
+                    .mapToLong(File::length)
+                    .sum();
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return size/1_000_000f;
     }
 }
 

@@ -5,6 +5,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
+import java.io.Serializable;
 import java.sql.Timestamp;
 
 @NoArgsConstructor
@@ -12,7 +13,8 @@ import java.sql.Timestamp;
 @Data
 @Entity
 @Table(name = "public_chat")
-public class PublicChatMessage {
+public class PublicChatMessage implements Serializable {
+    private static final long serialVersionUID = -7432633079027978603L;
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

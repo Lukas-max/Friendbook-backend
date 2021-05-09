@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 import luke.friendbook.account.model.User;
 
 import javax.persistence.*;
+import java.io.Serializable;
 import java.sql.Timestamp;
 
 @NoArgsConstructor
@@ -14,7 +15,8 @@ import java.sql.Timestamp;
 @Data
 @Entity
 @Table(name = "private_chat")
-public class PrivateChatMessage {
+public class PrivateChatMessage implements Serializable {
+    private static final long serialVersionUID = -6798363045676335693L;
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

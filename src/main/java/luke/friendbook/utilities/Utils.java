@@ -10,8 +10,12 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.servlet.mvc.method.annotation.MvcUriComponentsBuilder;
 
 import java.nio.file.Path;
+import java.security.SecureRandom;
 import java.util.List;
+import java.util.Random;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 public interface Utils {
 
@@ -50,5 +54,11 @@ public interface Utils {
                             model.getUser().getUserUUID()
                     );
                 }).collect(Collectors.toList());
+    }
+
+    static Stream<Character> getRandomChars(int length, int start, int end) {
+        Random random = new SecureRandom();
+        return random.ints(length, start, end)
+                .mapToObj(i -> (char) i);
     }
 }

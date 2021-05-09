@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
+import java.io.Serializable;
 
 @NoArgsConstructor
 @AllArgsConstructor
@@ -13,7 +14,8 @@ import javax.persistence.*;
 @Builder
 @Entity
 @Table(name = "chat_room")
-public class ChatRoom {
+public class ChatRoom implements Serializable {
+    private static final long serialVersionUID = -2959073730649220030L;
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

@@ -4,9 +4,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
 @ResponseStatus(HttpStatus.UNAUTHORIZED)
-public class RegistrationTokenExpirationException extends RuntimeException{
+public class VerificationTokenExpirationException extends RuntimeException{
 
-    public RegistrationTokenExpirationException(String message) {
+    public VerificationTokenExpirationException(String message) {
         super(message);
     }
 }

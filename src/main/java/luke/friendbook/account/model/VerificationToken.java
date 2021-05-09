@@ -30,7 +30,7 @@ public class VerificationToken implements Serializable {
 
     private LocalDateTime confirmationDateTime;
 
-    @OneToOne
+    @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 

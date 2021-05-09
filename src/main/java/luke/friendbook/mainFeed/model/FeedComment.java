@@ -5,6 +5,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
+import java.io.Serializable;
 import java.sql.Timestamp;
 
 @NoArgsConstructor
@@ -12,7 +13,8 @@ import java.sql.Timestamp;
 @Data
 @Entity
 @Table(name = "feed_comment")
-public class FeedComment {
+public class FeedComment implements Serializable {
+    private static final long serialVersionUID = 8287839052966474566L;
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

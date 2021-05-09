@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 import luke.friendbook.account.model.User;
 
 import javax.persistence.*;
+import java.io.Serializable;
 import java.sql.Timestamp;
 
 @NoArgsConstructor
@@ -15,7 +16,8 @@ import java.sql.Timestamp;
 @Builder
 @Entity
 @Table(name = "feed")
-public class FeedModel {
+public class FeedModel implements Serializable {
+    private static final long serialVersionUID = -8214675052760203546L;
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

@@ -1,8 +1,7 @@
 package luke.friendbook.mailClient;
 
-import com.sun.mail.smtp.SMTPAddressFailedException;
-import luke.friendbook.exception.MailMessageFailureException;
 import luke.friendbook.account.model.User;
+import luke.friendbook.exception.MailMessageFailureException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.mail.javamail.JavaMailSender;

@@ -99,9 +99,10 @@ public class UserRepository implements IUserRepository, UserDetailsService {
     public User update(User user) {
         User fetchedUser = entityManager.find(User.class, user.getUserId());
         if (fetchedUser != null) {
-            fetchedUser.setUsername(user.getUsername());
-            fetchedUser.setEmail(user.getEmail());
             fetchedUser.setPassword(user.getPassword());
+            fetchedUser.setEmail(user.getEmail());
+        } else {
+            throw new NotFoundException("Nie znaleziono użytkownika po UUID. (UserRepository.update())");
         }
         return fetchedUser;
     }

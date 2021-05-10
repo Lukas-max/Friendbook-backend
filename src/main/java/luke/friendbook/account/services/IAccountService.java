@@ -1,5 +1,6 @@
 package luke.friendbook.account.services;
 
+import luke.friendbook.account.model.Credentials;
 import luke.friendbook.account.model.UserResponseModel;
 import luke.friendbook.account.model.UserRequestModel;
 
@@ -15,4 +16,6 @@ public interface IAccountService {
     void sendResetPasswordEmail(String email);
 
     void resetPasswordAndNotify(String token);
+
+    void changePassword(Credentials credentials);
 }

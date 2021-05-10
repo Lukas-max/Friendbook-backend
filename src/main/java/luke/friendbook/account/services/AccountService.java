@@ -145,6 +145,20 @@ public class AccountService implements IAccountService {
         mailSender.sendMail(user, mail, "Reset hasła");
     }
 
+    @Override
+    public void changePassword(Credentials credentials) {
+        if (!credentials.getPassword().equals(credentials.getConfirmPassword()))
+            throw new VerificationException("Hasła nie zgadzają się ze sobą");
+
+        byte[] passBytes = Base64
+                .getDecoder()
+                .decode(credentials.getPassword());
+        String password = new String(passBytes);
+        User user = Utils.getAuthenticatedUser().getUser();
+        user.setPassword(passwordEncoder.encode(password));
+        userRepository.update(user);
+    }
+
     private VerificationToken createVerificationToken(User user) {
         VerificationToken verificationToken = new VerificationToken(user);
         verificationToken.setUser(user);

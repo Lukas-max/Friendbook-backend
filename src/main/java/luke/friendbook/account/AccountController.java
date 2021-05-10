@@ -1,5 +1,6 @@
 package luke.friendbook.account;
 
+import luke.friendbook.account.model.Credentials;
 import luke.friendbook.account.model.UserRequestModel;
 import luke.friendbook.account.model.UserResponseModel;
 import luke.friendbook.account.services.IAccountService;
@@ -26,9 +27,15 @@ public class AccountController{
         accountService.sendResetPasswordEmail(email);
     }
 
-    @PutMapping("/reset-password")
+    @PatchMapping("/reset-password")
     public void resetPassword(@RequestBody String token) {
         accountService.resetPasswordAndNotify(token);
+    }
+
+    @PatchMapping("/password")
+    public ResponseEntity<?> changePassword(@RequestBody Credentials credentials) {
+        accountService.changePassword(credentials);
+        return ResponseEntity.ok().build();
     }
 
     @PostMapping("/register")

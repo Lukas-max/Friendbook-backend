@@ -38,7 +38,7 @@ public class MainFeedController {
         return ResponseEntity.ok().body(feedModelDtoChunk);
     }
 
-    @GetMapping("/{feedId}/{fileName}")
+    @GetMapping("/file/{feedId}/{fileName}")
     public ResponseEntity<byte[]> downloadFeedFile(@PathVariable String feedId, @PathVariable String fileName) {
         byte[] data = feedService.download(feedId, fileName, DirectoryType.STANDARD_DIRECTORY);
 

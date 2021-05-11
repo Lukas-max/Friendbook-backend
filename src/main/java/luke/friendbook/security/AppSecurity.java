@@ -3,6 +3,7 @@ package luke.friendbook.security;
 import luke.friendbook.utilities.JTokenUtility;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -35,7 +36,17 @@ public class AppSecurity extends WebSecurityConfigurerAdapter {
     protected void configure(HttpSecurity http) throws Exception {
         http.csrf().disable()
                 .cors().and()
-                .authorizeRequests().anyRequest().permitAll()
+                .authorizeRequests()
+                .antMatchers(HttpMethod.GET,
+                        "/api/account/email",
+                        "/api/storage/file/**",
+                        "/api/storage/image/**",
+                        "/api/feed/file/**",
+                        "/api/feed/image/**").permitAll()
+                .antMatchers("/app/user/login", "/socket/connect/**").permitAll()
+                .antMatchers(HttpMethod.POST, "/api/account/register", "/api/account/confirm-account")
+                .permitAll()
+                .anyRequest().authenticated()
                 .and()
                 .addFilter(getAuthenticationFilter())
                 .addFilter(getAuthorizationFilter());

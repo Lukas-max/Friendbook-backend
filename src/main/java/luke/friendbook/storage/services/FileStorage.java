@@ -371,6 +371,22 @@ public class FileStorage implements IFileStorage {
     }
 
     @Override
+    public void deleteUserData(User user) {
+        Path profilePhoto = profileDir.resolve(user.getUserUUID());
+        Path filesDirectory = mainDir.resolve(user.getUserId().toString());
+        Path imagesDirectory = imageDir.resolve(user.getUserId().toString());
+
+        try {
+            FileSystemUtils.deleteRecursively(profilePhoto);
+            FileSystemUtils.deleteRecursively(filesDirectory);
+            FileSystemUtils.deleteRecursively(imagesDirectory);
+        } catch (IOException e){
+            log.error(e.getLocalizedMessage());
+        }
+
+    }
+
+    @Override
     public void cleanAll() throws IOException {
         FileSystemUtils.deleteRecursively(mainDir);
         FileSystemUtils.deleteRecursively(imageDir);

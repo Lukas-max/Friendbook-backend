@@ -16,4 +16,6 @@ public interface IPrivateChatRepository {
     PrivateChatMessage save(PrivateChatMessage privateChatMessage);
 
     void updateMessagesToReceivedStatus(String chatId, String userUUID);
+
+    void deleteMessagesBySenderUUID(String userUUID);
 }

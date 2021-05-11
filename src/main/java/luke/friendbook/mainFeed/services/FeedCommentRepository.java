@@ -94,4 +94,13 @@ public class FeedCommentRepository implements IFeedCommentRepository {
 
         deleteQuery.executeUpdate();
     }
+
+    @Override
+    @Transactional
+    public void deleteCommentsByUser(String userUUID) {
+        final String sql = "DELETE FROM FeedComment c WHERE c.userUUID = ?1";
+        Query deleteQuery = em.createQuery(sql)
+                .setParameter(1, userUUID);
+        deleteQuery.executeUpdate();
+    }
 }

@@ -72,4 +72,13 @@ public class PrivateChatRepository implements IPrivateChatRepository {
 
         query.executeUpdate();
     }
+
+    @Override
+    @Transactional
+    public void deleteMessagesBySenderUUID(String userUUID) {
+        final String jpql = "DELETE FROM PrivateChatMessage m WHERE m.senderUUID = ?1";
+        Query query = entityManager.createQuery(jpql)
+                .setParameter(1, userUUID);
+        query.executeUpdate();
+    }
 }

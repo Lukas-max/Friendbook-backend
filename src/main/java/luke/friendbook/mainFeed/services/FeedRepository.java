@@ -1,9 +1,9 @@
 package luke.friendbook.mainFeed.services;
 
-import luke.friendbook.model.Chunk;
-import luke.friendbook.model.Page;
 import luke.friendbook.mainFeed.model.FeedModel;
 import luke.friendbook.mainFeed.model.FeedModelDto;
+import luke.friendbook.model.Chunk;
+import luke.friendbook.model.Page;
 import luke.friendbook.utilities.Utils;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
@@ -29,10 +29,20 @@ public class FeedRepository implements IFeedRepository {
 
     @Override
     @Transactional
+    public List<FeedModel> findAllByUser(Long userId) {
+        final String sql = "SELECT f FROM FeedModel f WHERE f.user.userId= ?1";
+        TypedQuery<FeedModel> feedTypedQuery = entityManager.createQuery(sql, FeedModel.class)
+                .setParameter(1, userId);
+
+        return feedTypedQuery.getResultList();
+    }
+
+    @Override
+    @Transactional
     public Page<FeedModelDto> findPage(int pageNumber, int pageSize) {
         Query countQuery = entityManager.createQuery("SELECT COUNT(f.id) FROM FeedModel f");
         long countResult = (long) countQuery.getSingleResult();
-        int totalPages = (int) (countResult/pageSize);
+        int totalPages = (int) (countResult / pageSize);
 
         final String query = "SELECT f FROM FeedModel f ORDER BY f.id DESC";
         TypedQuery<FeedModel> feedTypedQuery = entityManager.createQuery(query, FeedModel.class)
@@ -53,7 +63,7 @@ public class FeedRepository implements IFeedRepository {
                 .setParameter(2, offset);
 
         @SuppressWarnings("unchecked")
-        List<FeedModel> feedModelList =(List<FeedModel>) feedQuery.getResultList();
+        List<FeedModel> feedModelList = (List<FeedModel>) feedQuery.getResultList();
         List<FeedModelDto> feedModelDtoList = Utils.returnFeedModelDto(feedModelList);
         return new Chunk<>(limit, offset, feedModelDtoList);
     }

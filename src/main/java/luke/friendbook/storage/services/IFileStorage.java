@@ -38,6 +38,8 @@ public interface IFileStorage {
 
     void createRegisteredUserStorageDirectory(User user);
 
+    void deleteUserData(User user);
+
     void cleanAll() throws IOException;
 
     void checkStorageSpace();

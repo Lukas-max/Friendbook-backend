@@ -14,6 +14,8 @@ public interface IUserRepository extends Repository<User> {
 
     Optional<User> findByUuid(String userUUID);
 
+    void patchEmailOrPassword(User user);
+
     User patchStorageSize(String userUUID ,float size);
 
     void setUserStatusToLoggedIn(String userUUID);

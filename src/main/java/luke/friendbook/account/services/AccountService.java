@@ -1,9 +1,17 @@
 package luke.friendbook.account.services;
 
 import luke.friendbook.account.model.*;
-import luke.friendbook.exception.*;
+import luke.friendbook.connection.services.global.IPublicChatRepository;
+import luke.friendbook.connection.services.p2p.IPrivateChatRepository;
+import luke.friendbook.exception.EmailExistsException;
+import luke.friendbook.exception.NotFoundException;
+import luke.friendbook.exception.VerificationException;
+import luke.friendbook.exception.VerificationTokenExpirationException;
 import luke.friendbook.mailClient.IMailSender;
 import luke.friendbook.mailClient.MailSetting;
+import luke.friendbook.mainFeed.services.IFeedCommentRepository;
+import luke.friendbook.mainFeed.services.IFeedRepository;
+import luke.friendbook.mainFeed.services.IFeedStorage;
 import luke.friendbook.storage.services.IFileStorage;
 import luke.friendbook.utilities.Utils;
 import org.modelmapper.ModelMapper;
@@ -29,6 +37,11 @@ public class AccountService implements IAccountService {
     private final IUserRepository userRepository;
     private final IRegistrationTokenRepository registrationTokenRepository;
     private final IRoleRepository roleRepository;
+    private final IFeedCommentRepository feedCommentRepository;
+    private final IFeedRepository feedRepository;
+    private final IFeedStorage feedStorage;
+    private final IPublicChatRepository publicChatRepository;
+    private final IPrivateChatRepository privateChatRepository;
     private final TemplateEngine templateEngine;
     private final IMailSender mailSender;
     private final IFileStorage fileStorage;
@@ -45,6 +58,11 @@ public class AccountService implements IAccountService {
             IUserRepository userRepository,
             IRegistrationTokenRepository registrationTokenRepository,
             IRoleRepository roleRepository,
+            IFeedCommentRepository feedCommentRepository,
+            IFeedRepository feedRepository,
+            IFeedStorage feedStorage,
+            IPublicChatRepository publicChatRepository,
+            IPrivateChatRepository privateChatRepository,
             TemplateEngine templateEngine,
             IMailSender mailSender,
             IFileStorage fileStorage,
@@ -52,6 +70,11 @@ public class AccountService implements IAccountService {
         this.userRepository = userRepository;
         this.registrationTokenRepository = registrationTokenRepository;
         this.roleRepository = roleRepository;
+        this.feedCommentRepository = feedCommentRepository;
+        this.feedRepository = feedRepository;
+        this.feedStorage = feedStorage;
+        this.publicChatRepository = publicChatRepository;
+        this.privateChatRepository = privateChatRepository;
         this.templateEngine = templateEngine;
         this.mailSender = mailSender;
         this.fileStorage = fileStorage;
@@ -156,7 +179,37 @@ public class AccountService implements IAccountService {
         String password = new String(passBytes);
         User user = Utils.getAuthenticatedUser().getUser();
         user.setPassword(passwordEncoder.encode(password));
-        userRepository.update(user);
+        userRepository.patchEmailOrPassword(user);
+    }
+
+    @Override
+    public void changeEmail(String email) {
+        User user = Utils.getAuthenticatedUser().getUser();
+        user.setEmail(email);
+        userRepository.patchEmailOrPassword(user);
+    }
+
+    @Override
+    public void deleteAccount() {
+        User user = Utils.getAuthenticatedUser().getUser();
+        publicChatRepository.deleteAllByUser(user.getUserUUID());
+        privateChatRepository.deleteMessagesBySenderUUID(user.getUserUUID());
+        feedCommentRepository.deleteCommentsByUser(user.getUserUUID());
+        fileStorage.deleteUserData(user);
+        feedRepository
+                .findAllByUser(user.getUserId())
+                .forEach(feedModel -> {
+            feedRepository.deleteFeed(feedModel);
+            String feedId = feedModel.getId().toString();
+
+            if (feedModel.getFiles())
+                feedStorage.deleteFeedFiles(feedId);
+
+            if (feedModel.getImages())
+                feedStorage.deleteFeedImages(feedId);
+        });
+
+        userRepository.deleteById(user.getUserId());
     }
 
     private VerificationToken createVerificationToken(User user) {

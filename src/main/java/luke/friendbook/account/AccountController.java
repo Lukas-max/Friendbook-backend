@@ -38,6 +38,12 @@ public class AccountController{
         return ResponseEntity.ok().build();
     }
 
+    @PatchMapping("/email")
+    public ResponseEntity<?> changeEmail(@RequestBody String email) {
+        accountService.changeEmail(email);
+        return ResponseEntity.ok().build();
+    }
+
     @PostMapping("/register")
     public ResponseEntity<UserResponseModel> register(@RequestBody UserRequestModel userRequestModel) {
         UserResponseModel savedUser = accountService.register(userRequestModel);
@@ -49,6 +55,10 @@ public class AccountController{
         accountService.confirmRegistration(tokenUUID);
     }
 
+    @DeleteMapping
+    public void deleteAccount() {
+        accountService.deleteAccount();
+    }
 }
 
 

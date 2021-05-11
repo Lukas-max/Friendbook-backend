@@ -18,4 +18,8 @@ public interface IAccountService {
     void resetPasswordAndNotify(String token);
 
     void changePassword(Credentials credentials);
+
+    void changeEmail(String email);
+
+    void deleteAccount();
 }

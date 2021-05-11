@@ -81,4 +81,13 @@ public class PublicChatRepository implements IPublicChatRepository{
         }
         return false;
     }
+
+    @Override
+    @Transactional
+    public void deleteAllByUser(String userUUID) {
+        final String jpql = "DELETE FROM PublicChatMessage m WHERE m.userUUID = ?1";
+        Query query = entityManager.createQuery(jpql)
+                .setParameter(1, userUUID);
+        query.executeUpdate();
+    }
 }

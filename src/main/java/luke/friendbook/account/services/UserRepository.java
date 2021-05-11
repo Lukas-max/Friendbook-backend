@@ -109,6 +109,17 @@ public class UserRepository implements IUserRepository, UserDetailsService {
 
     @Override
     @Transactional
+    public void patchEmailOrPassword(User user) {
+        final String sql = "UPDATE User u SET u.email =?1, u.password =?2 WHERE u.userUUID = ?3";
+        Query query = entityManager.createQuery(sql)
+                .setParameter(1, user.getEmail())
+                .setParameter(2, user.getPassword())
+                .setParameter(3, user.getUserUUID());
+        query.executeUpdate();
+    }
+
+    @Override
+    @Transactional
     public User patchStorageSize(String userUUID, float size) {
         User user = findByUuid(userUUID).orElseThrow(() ->
                 new NotFoundException("Nie znaleziono zalogowanego użytkownika. (UserRepository.patchStorageSize())"));

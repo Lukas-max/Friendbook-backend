@@ -9,4 +9,6 @@ public interface IFeedCommentRepository extends Repository<FeedComment> {
     Chunk<FeedComment> findChunk(long feedId, int limit, long offset);
 
     void deleteCommentsFromFeed(Long feedId);
+
+    void deleteCommentsByUser(String userUUID);
 }

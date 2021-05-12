@@ -2,7 +2,7 @@ package luke.friendbook.account.services;
 
 import luke.friendbook.account.model.User;
 import luke.friendbook.account.model.UserResponseModel;
-import luke.friendbook.exception.NotFoundException;
+import luke.friendbook.exception.model.NotFoundException;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.TypeToken;
 import org.springframework.stereotype.Service;

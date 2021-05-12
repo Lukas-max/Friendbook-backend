@@ -2,7 +2,7 @@ package luke.friendbook.storage.services;
 
 import luke.friendbook.account.model.User;
 import luke.friendbook.account.services.IUserRepository;
-import luke.friendbook.exception.*;
+import luke.friendbook.exception.model.*;
 import luke.friendbook.model.Chunk;
 import luke.friendbook.security.model.SecurityContextUser;
 import luke.friendbook.storage.model.DirectoryType;

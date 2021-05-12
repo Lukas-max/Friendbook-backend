@@ -1,8 +1,8 @@
 package luke.friendbook.mainFeed.services;
 
 import luke.friendbook.utilities.Utils;
-import luke.friendbook.exception.FileUnreadableException;
-import luke.friendbook.exception.NotFoundException;
+import luke.friendbook.exception.model.FileUnreadableException;
+import luke.friendbook.exception.model.NotFoundException;
 import luke.friendbook.storage.model.DirectoryType;
 import luke.friendbook.storage.model.FileData;
 import org.apache.tika.Tika;

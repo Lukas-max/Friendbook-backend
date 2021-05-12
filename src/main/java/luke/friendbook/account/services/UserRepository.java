@@ -1,7 +1,7 @@
 package luke.friendbook.account.services;
 
 import luke.friendbook.account.model.User;
-import luke.friendbook.exception.NotFoundException;
+import luke.friendbook.exception.model.NotFoundException;
 import luke.friendbook.security.model.SecurityContextUser;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -151,10 +151,8 @@ public class UserRepository implements IUserRepository, UserDetailsService {
     @Override
     @Transactional
     public void setUserStatusToLoggedOut(String userUUID) {
-        User user = this.findByUuid(userUUID).orElseThrow(() ->
-                new NotFoundException("Nie znaleziono użytkownika po uuid, do którego została wysłana wiadomość."));
-
-        user.setLogged(false);
+        this.findByUuid(userUUID)
+                .ifPresent((user) -> user.setLogged(false));
     }
 
     @Override

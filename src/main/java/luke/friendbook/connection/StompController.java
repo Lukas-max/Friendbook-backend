@@ -7,7 +7,7 @@ import luke.friendbook.connection.model.PublicChatMessage;
 import luke.friendbook.connection.services.global.IPublicChatService;
 import luke.friendbook.connection.services.p2p.IChatRoomService;
 import luke.friendbook.connection.services.p2p.IPrivateChatService;
-import luke.friendbook.exception.ChatRoomException;
+import luke.friendbook.exception.model.ChatRoomException;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.simp.SimpMessageSendingOperations;

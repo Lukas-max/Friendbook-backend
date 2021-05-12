@@ -1,5 +1,6 @@
 package luke.friendbook.mainFeed;
 
+import luke.friendbook.exception.model.ArgumentNotValidException;
 import luke.friendbook.mainFeed.services.IFeedCommentService;
 import luke.friendbook.model.Chunk;
 import luke.friendbook.mainFeed.model.FeedModelDto;
@@ -65,7 +66,7 @@ public class MainFeedController {
 
     @PostMapping("/addons")
     public ResponseEntity<?> postFeedWithFiles(@RequestBody MultipartFile[] files,
-                                                    @RequestParam String text) throws IOException {
+                                               @RequestParam String text) throws IOException {
         FeedModelDto feedDto = feedService.saveFeedWithFiles(files, text);
         messageTemplate.convertAndSend("/topic/feed", feedDto);
         return ResponseEntity.ok().build();
@@ -84,7 +85,7 @@ public class MainFeedController {
     public ResponseEntity<?> deleteFeed(@PathVariable String feedId) {
         feedService.deleteFeed(feedId);
         commentService.deleteAllCommentsByFeed(Long.parseLong(feedId));
-        messageTemplate.convertAndSend("/topic/delete-feed",feedId);
+        messageTemplate.convertAndSend("/topic/delete-feed", feedId);
         return ResponseEntity.ok().build();
     }
 }

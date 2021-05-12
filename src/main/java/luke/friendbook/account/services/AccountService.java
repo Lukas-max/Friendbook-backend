@@ -3,10 +3,10 @@ package luke.friendbook.account.services;
 import luke.friendbook.account.model.*;
 import luke.friendbook.connection.services.global.IPublicChatRepository;
 import luke.friendbook.connection.services.p2p.IPrivateChatRepository;
-import luke.friendbook.exception.EmailExistsException;
-import luke.friendbook.exception.NotFoundException;
-import luke.friendbook.exception.VerificationException;
-import luke.friendbook.exception.VerificationTokenExpirationException;
+import luke.friendbook.exception.model.EmailExistsException;
+import luke.friendbook.exception.model.NotFoundException;
+import luke.friendbook.exception.model.VerificationException;
+import luke.friendbook.exception.model.VerificationTokenExpirationException;
 import luke.friendbook.mailClient.IMailSender;
 import luke.friendbook.mailClient.MailSetting;
 import luke.friendbook.mainFeed.services.IFeedCommentRepository;
@@ -18,6 +18,7 @@ import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.messaging.simp.SimpMessageSendingOperations;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.thymeleaf.TemplateEngine;
@@ -46,6 +47,8 @@ public class AccountService implements IAccountService {
     private final IMailSender mailSender;
     private final IFileStorage fileStorage;
     private final PasswordEncoder passwordEncoder;
+    private final SimpMessageSendingOperations messageTemplate;
+    private final ModelMapper modelMapper;
     private final Logger log = LoggerFactory.getLogger(this.getClass());
     @Value("${app.mail.verification.url}")
     private String verifyMailUrl;
@@ -66,7 +69,9 @@ public class AccountService implements IAccountService {
             TemplateEngine templateEngine,
             IMailSender mailSender,
             IFileStorage fileStorage,
-            PasswordEncoder passwordEncoder) {
+            PasswordEncoder passwordEncoder,
+            SimpMessageSendingOperations messageTemplate,
+            ModelMapper modelMapper) {
         this.userRepository = userRepository;
         this.registrationTokenRepository = registrationTokenRepository;
         this.roleRepository = roleRepository;
@@ -79,6 +84,8 @@ public class AccountService implements IAccountService {
         this.mailSender = mailSender;
         this.fileStorage = fileStorage;
         this.passwordEncoder = passwordEncoder;
+        this.messageTemplate = messageTemplate;
+        this.modelMapper = modelMapper;
     }
 
 
@@ -210,6 +217,7 @@ public class AccountService implements IAccountService {
         });
 
         userRepository.deleteById(user.getUserId());
+        sendDeletedUserByWebsocket(user);
     }
 
     private VerificationToken createVerificationToken(User user) {
@@ -258,6 +266,12 @@ public class AccountService implements IAccountService {
         return listChars.stream()
                 .collect(StringBuilder::new, StringBuilder::append, StringBuilder::append)
                 .toString();
+    }
+
+    private void sendDeletedUserByWebsocket(User user) {
+        UserResponseModel userResponse = modelMapper.map(user, UserResponseModel.class);
+        userResponse.setPassword("SECRET");
+        messageTemplate.convertAndSend("/topic/deleted-user", userResponse);
     }
 
     private Role getUserRole(RoleType roleType) {

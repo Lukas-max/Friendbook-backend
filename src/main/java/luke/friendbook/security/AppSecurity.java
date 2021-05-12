@@ -39,6 +39,7 @@ public class AppSecurity extends WebSecurityConfigurerAdapter {
                 .authorizeRequests()
                 .antMatchers(HttpMethod.GET,
                         "/api/account/email",
+                        "/api/account/reset-request",
                         "/api/storage/file/**",
                         "/api/storage/image/**",
                         "/api/feed/file/**",

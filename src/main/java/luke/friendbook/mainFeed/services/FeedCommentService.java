@@ -1,7 +1,7 @@
 package luke.friendbook.mainFeed.services;
 
-import luke.friendbook.exception.NotFoundException;
-import luke.friendbook.exception.UserUnauthorizedException;
+import luke.friendbook.exception.model.NotFoundException;
+import luke.friendbook.exception.model.UserUnauthorizedException;
 import luke.friendbook.mainFeed.model.FeedComment;
 import luke.friendbook.mainFeed.model.FeedModel;
 import luke.friendbook.model.Chunk;

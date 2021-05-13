@@ -14,6 +14,8 @@ import java.sql.Timestamp;
 @Data
 public class FeedCommentDto {
 
+    private Long id;
+
     @NotNull(message = "Brak numeru id postu")
     private Long feedId;
 
@@ -29,4 +31,6 @@ public class FeedCommentDto {
 
     @NotNull(message = "Brak daty utworzenia komentarza")
     private Timestamp timestamp;
+
+    private Timestamp lastUpdated;
 }

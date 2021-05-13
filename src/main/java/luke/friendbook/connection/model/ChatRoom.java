@@ -22,12 +22,12 @@ public class ChatRoom implements Serializable {
     @Column(name = "room_id")
     private Long id;
 
-    @Column(name = "chat_id")
+    @Column(name = "chat_id", nullable = false, unique = true)
     private String chatId;
 
-    @Column(name = "sender_uuid")
+    @Column(name = "sender_uuid", nullable = false)
     private String senderUUID;
 
-    @Column(name = "receiver_uuid")
+    @Column(name = "receiver_uuid", nullable = false)
     private String receiverUUID;
 }

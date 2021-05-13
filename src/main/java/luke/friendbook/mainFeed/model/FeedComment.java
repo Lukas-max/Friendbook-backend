@@ -21,19 +21,19 @@ public class FeedComment implements Serializable {
     @Column(name = "id")
     private Long id;
 
-    @Column(name = "feed_id")
+    @Column(name = "feed_id", nullable = false)
     private Long feedId;
 
-    @Column(name = "username")
+    @Column(name = "username", nullable = false)
     private String username;
 
-    @Column(name = "user_uuid")
+    @Column(name = "user_uuid", nullable = false)
     private String userUUID;
 
-    @Column(name = "content")
+    @Column(name = "content", nullable = false)
     private String content;
 
-    @Column(name = "timestamp")
+    @Column(name = "timestamp", nullable = false)
     private Timestamp timestamp;
 
     @Column(name = "last_updated")

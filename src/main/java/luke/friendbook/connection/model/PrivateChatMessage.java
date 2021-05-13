@@ -23,25 +23,25 @@ public class PrivateChatMessage implements Serializable {
     @Column(name = "id")
     private Long id;
 
-    @Column(name = "chat_id")
+    @Column(name = "chat_id", nullable = false)
     private String chatId;
 
-    @Column(name = "sender_uuid")
+    @Column(name = "sender_uuid", nullable = false)
     private String senderUUID;
 
-    @Column(name = "sender_name")
+    @Column(name = "sender_name", nullable = false)
     private String senderName;
 
-    @Column(name = "receiver_uuid")
+    @Column(name = "receiver_uuid", nullable = false)
     private String receiverUUID;
 
-    @Column(name = "receiver_name")
+    @Column(name = "receiver_name", nullable = false)
     private String receiverName;
 
-    @Column(name = "content")
+    @Column(name = "content", nullable = false)
     private String content;
 
-    @Column(name = "timestamp")
+    @Column(name = "timestamp", nullable = false)
     private Timestamp timestamp;
 
     @Column(name = "status")

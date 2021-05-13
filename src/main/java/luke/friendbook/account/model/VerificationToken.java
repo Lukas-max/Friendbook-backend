@@ -22,12 +22,16 @@ public class VerificationToken implements Serializable {
     @Column(name = "token_id")
     private Long tokenId;
 
+    @Column(name = "token", nullable = false)
     private String token;
 
+    @Column(name = "creation_date_time", nullable = false)
     private LocalDateTime creationDateTime;
 
+    @Column(name = "expiration_date_time", nullable = false)
     private LocalDateTime expirationDateTime;
 
+    @Column(name = "confirmation_date_time")
     private LocalDateTime confirmationDateTime;
 
     @ManyToOne

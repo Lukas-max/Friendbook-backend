@@ -27,7 +27,7 @@ public class User implements Serializable {
     @Column(name = "user_id")
     private Long userId;
 
-    @Column(name = "user_uuid")
+    @Column(name = "user_uuid", nullable = false,unique = true)
     private String userUUID;
 
     @Column(name = "username", nullable = false)
@@ -45,7 +45,7 @@ public class User implements Serializable {
     @Column(name = "locked", nullable = false)
     private boolean isLocked;
 
-    @Column(name = "logged", nullable = false)
+    @Column(name = "logged")
     private boolean isLogged;
 
     @Column(name = "storage_size")

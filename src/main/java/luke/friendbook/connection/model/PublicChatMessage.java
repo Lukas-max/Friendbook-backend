@@ -21,15 +21,15 @@ public class PublicChatMessage implements Serializable {
     @Column(name = "id")
     private Long id;
 
-    @Column(name = "content")
+    @Column(name = "content", nullable = false)
     private String content;
 
-    @Column(name = "username")
+    @Column(name = "username", nullable = false)
     private String username;
 
-    @Column(name = "user_uuid")
+    @Column(name = "user_uuid", nullable = false)
     private String userUUID;
 
-    @Column(name = "timestamp")
+    @Column(name = "timestamp", nullable = false)
     private Timestamp timestamp;
 }

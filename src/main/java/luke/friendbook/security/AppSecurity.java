@@ -43,10 +43,11 @@ public class AppSecurity extends WebSecurityConfigurerAdapter {
                         "/api/storage/file/**",
                         "/api/storage/image/**",
                         "/api/feed/file/**",
-                        "/api/feed/image/**").permitAll()
-                .antMatchers("/app/user/login", "/socket/connect/**").permitAll()
-                .antMatchers(HttpMethod.POST, "/api/account/register", "/api/account/confirm-account")
+                        "/api/feed/image/**")
                 .permitAll()
+                .antMatchers(HttpMethod.PATCH, "/api/account/reset-password").permitAll()
+                .antMatchers("/app/user/login", "/socket/connect/**").permitAll()
+                .antMatchers(HttpMethod.POST, "/api/account/register", "/api/account/confirm-account").permitAll()
                 .anyRequest().authenticated()
                 .and()
                 .addFilter(getAuthenticationFilter())

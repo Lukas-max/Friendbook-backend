@@ -31,7 +31,7 @@ schema.sql for generating databse tables is written in PostgreSql, remember that
 
 ## Run
 You need to create your own application.properties. Configuration: 
-`
+```
 spring.main.banner-mode=off
 server.port=[your port]
 
@@ -59,7 +59,7 @@ spring.mail.properties.mail.smtp.writetimeout = 5000
 
 spring.servlet.multipart.max-file-size=
 spring.servlet.multipart.max-request-size=
-`
+```
 - You can copy that config and paste in your values.
 - jwt.secret.key - that is the secret key for creating jwt token
 - app.mail.verification.mode - when ON usere register will be by Email verification using verification token
@@ -70,10 +70,11 @@ spring.servlet.multipart.max-request-size=
 Now when this is done you need to be sure that with your first start you need to:
 1) Create database tables and fill them with thata by:
 :ballot_box_with_check: make sure that in application.properties you have :
-- `#spring.jpa.hibernate.ddl-auto=create
+ ```
+ #spring.jpa.hibernate.ddl-auto=create
 spring.jpa.hibernate.ddl-auto=none
 spring.datasource.initialization-mode=always
-`
+```
 (You can always use ddl-auto instead of schema.sql generation)
 :ballot_box_with_check: The class AppBoot.java has active annotation @Component so it will be in Spring Context
 - 

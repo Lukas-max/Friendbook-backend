@@ -8,7 +8,7 @@ Project by Łukasz Jankowski.
 - PostgreSQL database
 ### Build in:
 - Spring Boot
-- Spring Data JPA
+- Spring JPA (EntityManager)
 - Spring Websocket/STOMP
 - Spring Security and JWT
 - Spring Validation

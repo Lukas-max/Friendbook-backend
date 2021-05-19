@@ -36,7 +36,7 @@ import java.util.stream.Stream;
 public class AccountService implements IAccountService {
 
     private final IUserRepository userRepository;
-    private final IRegistrationTokenRepository registrationTokenRepository;
+    private final IVerificationTokenRepository verificationTokenRepository;
     private final IRoleRepository roleRepository;
     private final IFeedCommentRepository feedCommentRepository;
     private final IFeedRepository feedRepository;
@@ -59,7 +59,7 @@ public class AccountService implements IAccountService {
 
     public AccountService(
             IUserRepository userRepository,
-            IRegistrationTokenRepository registrationTokenRepository,
+            IVerificationTokenRepository verificationTokenRepository,
             IRoleRepository roleRepository,
             IFeedCommentRepository feedCommentRepository,
             IFeedRepository feedRepository,
@@ -73,7 +73,7 @@ public class AccountService implements IAccountService {
             SimpMessageSendingOperations messageTemplate,
             ModelMapper modelMapper) {
         this.userRepository = userRepository;
-        this.registrationTokenRepository = registrationTokenRepository;
+        this.verificationTokenRepository = verificationTokenRepository;
         this.roleRepository = roleRepository;
         this.feedCommentRepository = feedCommentRepository;
         this.feedRepository = feedRepository;
@@ -95,14 +95,20 @@ public class AccountService implements IAccountService {
         User user = new ModelMapper().map(userRequestModel, User.class);
         user.generateUUID();
         user.getRoles().add(role);
-        user.setLocked(true);
+        user.setStorageSize(0f);
         String decodedPassword = new String(Base64.getDecoder().decode(user.getPassword().getBytes()));
         user.setPassword(passwordEncoder.encode(decodedPassword));
         validateRegistration(user);
-        MailSetting mailSetting = mailMode.equals("ON") ? MailSetting.ON : MailSetting.OFF;
 
-        if (mailSetting == MailSetting.OFF) userRepository.save(user);
-        else {
+        MailSetting mailSetting = mailMode.equals("ON") ? MailSetting.ON : MailSetting.OFF;
+        if (mailSetting == MailSetting.OFF) {
+            user.setLocked(false);
+            user.setActive(true);
+            user.setAccountCreatedTime(LocalDateTime.now());
+            userRepository.save(user);
+        } else {
+            user.setLocked(true);
+            user.setActive(false);
             userRepository.save(user);
             VerificationToken verificationToken = createVerificationToken(user);
             String mailTemplate = createMailTemplate(user, verifyMailUrl, verificationToken, "registerMail");
@@ -135,7 +141,7 @@ public class AccountService implements IAccountService {
         user.setAccountCreatedTime(LocalDateTime.now());
         verificationToken.setConfirmationDateTime(LocalDateTime.now());
         userRepository.save(user);
-        registrationTokenRepository.save(verificationToken);
+        verificationTokenRepository.save(verificationToken);
         fileStorage.createRegisteredUserStorageDirectory(user);
     }
 
@@ -170,7 +176,7 @@ public class AccountService implements IAccountService {
         String password = createRandomPassword();
         user.setPassword(passwordEncoder.encode(password));
         userRepository.save(user);
-        registrationTokenRepository.save(verificationToken);
+        verificationTokenRepository.save(verificationToken);
         String mail = createMailWithNewPassword(user, password);
         mailSender.sendMail(user, mail, "Reset hasła");
     }
@@ -206,16 +212,17 @@ public class AccountService implements IAccountService {
         feedRepository
                 .findAllByUser(user.getUserId())
                 .forEach(feedModel -> {
-            feedRepository.deleteFeed(feedModel);
-            String feedId = feedModel.getId().toString();
+                    feedRepository.deleteFeed(feedModel);
+                    String feedId = feedModel.getId().toString();
 
-            if (feedModel.getFiles())
-                feedStorage.deleteFeedFiles(feedId);
+                    if (feedModel.getFiles())
+                        feedStorage.deleteFeedFiles(feedId);
 
-            if (feedModel.getImages())
-                feedStorage.deleteFeedImages(feedId);
-        });
+                    if (feedModel.getImages())
+                        feedStorage.deleteFeedImages(feedId);
+                });
 
+        verificationTokenRepository.deleteByUserId(user.getUserId());
         userRepository.deleteById(user.getUserId());
         sendDeletedUserByWebsocket(user);
     }
@@ -223,12 +230,12 @@ public class AccountService implements IAccountService {
     private VerificationToken createVerificationToken(User user) {
         VerificationToken verificationToken = new VerificationToken(user);
         verificationToken.setUser(user);
-        registrationTokenRepository.save(verificationToken);
+        verificationTokenRepository.save(verificationToken);
         return verificationToken;
     }
 
     private VerificationToken findToken(String token) {
-        return registrationTokenRepository.findByToken(token).orElseThrow(() -> {
+        return verificationTokenRepository.findByToken(token).orElseThrow(() -> {
             throw new NotFoundException("Nie znaleziono w bazie tokena.");
         });
     }

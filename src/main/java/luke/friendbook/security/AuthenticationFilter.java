@@ -1,10 +1,14 @@
 package luke.friendbook.security;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.SneakyThrows;
 import luke.friendbook.account.model.LoginRequestModel;
+import luke.friendbook.account.model.User;
+import luke.friendbook.account.model.UserResponseModel;
 import luke.friendbook.security.model.SecurityContextUser;
 import luke.friendbook.utilities.JTokenUtility;
+import org.modelmapper.ModelMapper;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.InternalAuthenticationServiceException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -18,6 +22,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import javax.servlet.FilterChain;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.util.Base64;
 import java.util.Collections;
 
@@ -65,17 +70,15 @@ public class AuthenticationFilter extends UsernamePasswordAuthenticationFilter {
             HttpServletRequest request,
             HttpServletResponse response,
             FilterChain chain,
-            Authentication authentication) {
+            Authentication authentication) throws IOException {
         if (!authentication.isAuthenticated())
             throw new InternalAuthenticationServiceException("Błąd przy uwierzytelnieniu użytkownika");
 
-        String uuid = ((SecurityContextUser) authentication.getPrincipal())
-                .getUser()
-                .getUserUUID();
+        User user = ((SecurityContextUser) authentication.getPrincipal()).getUser();
+        UserResponseModel responseModel = new ModelMapper().map(user, UserResponseModel.class);
+        responseModel.setPassword("SECRET");
 
-        String username = ((SecurityContextUser) authentication.getPrincipal())
-                .getUser()
-                .getUsername();
+        String userString = new ObjectMapper().writeValueAsString(responseModel);
 
         String auths = tokenUtility.pullAuthorities(authentication);
         String token = tokenUtility.generateToken(authentication);
@@ -83,8 +86,8 @@ public class AuthenticationFilter extends UsernamePasswordAuthenticationFilter {
                 .getTime();
 
 
-        response.setHeader("username", username);
-        response.setHeader("user", uuid);
+        response.setCharacterEncoding("UTF-8");
+        response.getWriter().write(userString);
         response.setHeader("jwt-token", token);
         response.setHeader("roles", auths);
         response.setHeader("jwt-expiration", Long.toString(timestamp));

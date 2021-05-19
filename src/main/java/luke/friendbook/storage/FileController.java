@@ -43,11 +43,11 @@ public class FileController {
         return ResponseEntity.ok().body(fileChunk);
     }
 
-    @GetMapping("/file/{id:.+}/{directory:.+}/{fileName:.+}")
-    public ResponseEntity<byte[]> downloadFile(@PathVariable String id,
+    @GetMapping("/file/{userUUID:.+}/{directory:.+}/{fileName:.+}")
+    public ResponseEntity<byte[]> downloadFile(@PathVariable String userUUID,
                                                @PathVariable String directory,
                                                @PathVariable String fileName) {
-        byte[] data = fileStorage.download(id, directory, fileName, DirectoryType.STANDARD_DIRECTORY);
+        byte[] data = fileStorage.download(userUUID, directory, fileName, DirectoryType.STANDARD_DIRECTORY);
 
         return ResponseEntity.ok()
                 .header(HttpHeaders.CONTENT_DISPOSITION, "dodano plik " + fileName)
@@ -87,8 +87,12 @@ public class FileController {
     }
 
     @PostMapping("/images")
-    public ResponseEntity<Integer> uploadImages(@RequestBody MultipartFile[] files, @RequestParam String directory) {
-        int length = fileStorage.save(files, directory, DirectoryType.IMAGE_DIRECTORY);
+    public ResponseEntity<Integer> uploadFilesAndImages(@RequestBody MultipartFile[] files,
+                                                @RequestBody MultipartFile[] images,
+                                                @RequestParam String directory) {
+        fileStorage.checkStorageSpace();
+        int length = fileStorage.save(files, directory, DirectoryType.STANDARD_DIRECTORY);
+        fileStorage.save(images, directory, DirectoryType.IMAGE_DIRECTORY);
         return ResponseEntity.ok().body(length);
     }
 

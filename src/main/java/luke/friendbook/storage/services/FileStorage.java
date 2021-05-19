@@ -62,7 +62,7 @@ public class FileStorage implements IFileStorage {
 
         List<User> users = userRepository.findAll();
         for (User user : users) {
-            Path userPath = Path.of(user.getUserId().toString());
+            Path userPath = Path.of(user.getUserUUID());
             Files.createDirectory(mainDir.resolve(userPath));
             Files.createDirectory(mainDir.resolve(userPath).resolve(storageDir));
             Files.createDirectory(mainDir.resolve(userPath).resolve(otherDir));
@@ -82,10 +82,10 @@ public class FileStorage implements IFileStorage {
     }
 
     @Override
-    public byte[] download(String id, String directory, String fileName, DirectoryType dirType) {
+    public byte[] download(String userUUID, String directory, String fileName, DirectoryType dirType) {
         Path rootDir = dirType == DirectoryType.STANDARD_DIRECTORY ? mainDir : imageDir;
         Path file = rootDir
-                .resolve(id)
+                .resolve(userUUID)
                 .resolve(directory)
                 .resolve(fileName);
 
@@ -136,9 +136,8 @@ public class FileStorage implements IFileStorage {
 
     @Override
     public FileData[] findFiles(String userUUID, String directory) throws IOException {
-        String userId = resolveUserFolder(userUUID);
         Path searchedDirectory = mainDir
-                .resolve(userId)
+                .resolve(userUUID)
                 .resolve(directory);
 
         return Files.list(searchedDirectory)
@@ -151,13 +150,13 @@ public class FileStorage implements IFileStorage {
 
                         fileData = new FileData(
                                 file.getFileName().toString(),
-                                Utils.createStorageFileUrl("downloadFile", userId, directory, file.getFileName().toString()),
+                                Utils.createStorageFileUrl("downloadFile", userUUID, directory, file.getFileName().toString()),
                                 mimeType,
                                 fileType,
                                 file.toFile().length());
 
                         if (fileType.equals("image")) {
-                            String url = Utils.createStorageFileUrl("downloadImage", userId, directory, file.getFileName().toString());
+                            String url = Utils.createStorageFileUrl("downloadImage", userUUID, directory, file.getFileName().toString());
                             fileData.setImageUrl(url);
                         }
 
@@ -171,9 +170,8 @@ public class FileStorage implements IFileStorage {
 
     @Override
     public Chunk<FileData> findFilesChunk(String userUUID, String directory, int limit, int offset) throws IOException {
-        String userId = resolveUserFolder(userUUID);
         Path searchedDirectory = mainDir
-                .resolve(userId)
+                .resolve(userUUID)
                 .resolve(directory);
 
         File file = new File(searchedDirectory.toString());
@@ -186,13 +184,13 @@ public class FileStorage implements IFileStorage {
 
             FileData fileData = new FileData(
                     files[i].getName(),
-                    Utils.createStorageFileUrl("downloadFile", userId, directory, files[i].getName()),
+                    Utils.createStorageFileUrl("downloadFile", userUUID, directory, files[i].getName()),
                     mimeType,
                     fileType,
                     files[i].length());
 
             if (fileType.equals("image")) {
-                String url = Utils.createStorageFileUrl("downloadImage", userId, directory, files[i].getName());
+                String url = Utils.createStorageFileUrl("downloadImage", userUUID, directory, files[i].getName());
                 fileData.setImageUrl(url);
             }
             fileDataList.add(fileData);
@@ -236,7 +234,7 @@ public class FileStorage implements IFileStorage {
     }
 
     private String getDirectory(String userUUID) {
-        return userUUID == null ? resolveAuthenticatedUserFolder() : resolveUserFolder(userUUID);
+        return userUUID == null ? resolveAuthenticatedUserFolder() : userUUID;
     }
 
     private String resolveAuthenticatedUserFolder() {
@@ -245,19 +243,7 @@ public class FileStorage implements IFileStorage {
         if (contextUser == null)
             throw new UserUnauthorizedException("Brak dostępu. Brak uwierzytelnionego użytkownika.");
 
-        return contextUser.getUser().getUserId().toString();
-    }
-
-    /**
-     * !!!!!!
-     * Ta metoda będzie do usunięcia kiedy szukanie po katologach będzie tylko po UUID. Nie potrzebny będzie
-     * userId.
-     */
-    private String resolveUserFolder(String userUUID) {
-        User user = userRepository.findByUuid(userUUID).orElseThrow(() ->
-                new NotFoundException("Nie znaleziono użytkownika po przesłanym numerze identyfikacyjnym"));
-
-        return user.getUserId().toString();
+        return contextUser.getUser().getUserUUID();
     }
 
     /**
@@ -267,9 +253,9 @@ public class FileStorage implements IFileStorage {
     @Override
     public int save(MultipartFile[] files, String directory, DirectoryType dirType) {
         int savedFiles = 0;
-        String id = resolveAuthenticatedUserFolder();
-        Path filesDirectory = mainDir.resolve(id).resolve(directory);
-        Path imageDirectory = imageDir.resolve(id).resolve(directory);
+        String userUUID = resolveAuthenticatedUserFolder();
+        Path filesDirectory = mainDir.resolve(userUUID).resolve(directory);
+        Path imageDirectory = imageDir.resolve(userUUID).resolve(directory);
 
         for (MultipartFile file : files) {
             try {
@@ -294,9 +280,9 @@ public class FileStorage implements IFileStorage {
 
     @Override
     public void createFolder(String directory) {
-        String id = resolveAuthenticatedUserFolder();
-        Path folderPath = mainDir.resolve(id).resolve(directory);
-        Path imageFolderPath = imageDir.resolve(id).resolve(directory);
+        String userUUID = resolveAuthenticatedUserFolder();
+        Path folderPath = mainDir.resolve(userUUID).resolve(directory);
+        Path imageFolderPath = imageDir.resolve(userUUID).resolve(directory);
 
         try {
             Files.createDirectory(folderPath);
@@ -308,9 +294,9 @@ public class FileStorage implements IFileStorage {
 
     @Override
     public boolean deleteFolder(String directory) {
-        String id = resolveAuthenticatedUserFolder();
-        Path deletePath = mainDir.resolve(id).resolve(directory);
-        Path deleteImageFolderPath = imageDir.resolve(id).resolve(directory);
+        String userUUID = resolveAuthenticatedUserFolder();
+        Path deletePath = mainDir.resolve(userUUID).resolve(directory);
+        Path deleteImageFolderPath = imageDir.resolve(userUUID).resolve(directory);
 
         if (!Files.exists(deletePath) || !Files.exists(deleteImageFolderPath))
             return false;
@@ -329,9 +315,9 @@ public class FileStorage implements IFileStorage {
 
     @Override
     public void deleteFile(String directory, String fileName) {
-        String id = resolveAuthenticatedUserFolder();
-        Path deleteFilePath = mainDir.resolve(id).resolve(directory).resolve(fileName);
-        Path deleteImageFilePath = imageDir.resolve(id).resolve(directory).resolve(fileName);
+        String userUUID = resolveAuthenticatedUserFolder();
+        Path deleteFilePath = mainDir.resolve(userUUID).resolve(directory).resolve(fileName);
+        Path deleteImageFilePath = imageDir.resolve(userUUID).resolve(directory).resolve(fileName);
 
         try {
             boolean result = Files.deleteIfExists(deleteFilePath);
@@ -349,7 +335,7 @@ public class FileStorage implements IFileStorage {
     @Override
     public void createRegisteredUserStorageDirectory(User user) {
         try {
-            Path newUserPath = Path.of(user.getUserId().toString());
+            Path newUserPath = Path.of(user.getUserUUID());
             Files.createDirectory(mainDir.resolve(newUserPath));
             Files.createDirectory(mainDir.resolve(newUserPath).resolve(storageDir));
             Files.createDirectory(mainDir.resolve(newUserPath).resolve(otherDir));
@@ -373,14 +359,14 @@ public class FileStorage implements IFileStorage {
     @Override
     public void deleteUserData(User user) {
         Path profilePhoto = profileDir.resolve(user.getUserUUID());
-        Path filesDirectory = mainDir.resolve(user.getUserId().toString());
-        Path imagesDirectory = imageDir.resolve(user.getUserId().toString());
+        Path filesDirectory = mainDir.resolve(user.getUserUUID());
+        Path imagesDirectory = imageDir.resolve(user.getUserUUID());
 
         try {
             FileSystemUtils.deleteRecursively(profilePhoto);
             FileSystemUtils.deleteRecursively(filesDirectory);
             FileSystemUtils.deleteRecursively(imagesDirectory);
-        } catch (IOException e){
+        } catch (IOException e) {
             log.error(e.getLocalizedMessage());
         }
 
@@ -401,15 +387,14 @@ public class FileStorage implements IFileStorage {
             throw new ExceededStorageException("Przekroczono dopuszczalną ilość wolnego miejsca");
     }
 
-    private void updateUserStorageSize(){
+    private void updateUserStorageSize() {
         String userUUID = Utils.getAuthenticatedUser().getUser().getUserUUID();
-        Long userId = Utils.getAuthenticatedUser().getUser().getUserId();
-        float size = getUserStorageSize(userId);
+        float size = getUserStorageSize(userUUID);
         userRepository.patchStorageSize(userUUID, size);
     }
 
-    private float getUserStorageSize(Long id) {
-        Path path = mainDir.resolve(id.toString());
+    private float getUserStorageSize(String userUUID) {
+        Path path = mainDir.resolve(userUUID);
         long size = 0;
 
         try (Stream<Path> fileWalk = Files.walk(path)) {
@@ -422,7 +407,7 @@ public class FileStorage implements IFileStorage {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        return size/1_000_000f;
+        return size / 1_000_000f;
     }
 }
 

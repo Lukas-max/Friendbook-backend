@@ -24,7 +24,7 @@ public class UserRepository implements IUserRepository, UserDetailsService {
 
     @Override
     public List<User> findAll() {
-        final String query = "SELECT u FROM User u";
+        final String query = "SELECT u FROM User u ORDER BY u.username";
         TypedQuery<User> userTypedQuery = entityManager.createQuery(query, User.class);
         return userTypedQuery.getResultList();
     }

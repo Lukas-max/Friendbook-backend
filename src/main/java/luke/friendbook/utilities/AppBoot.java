@@ -60,7 +60,6 @@ public class AppBoot {
                 .username("marian")
                 .password(passwordEncoder.encode("user"))
                 .email("m")
-//                .email("lukaszjan88@gmail.com")
                 .isActive(true)
                 .isLocked(false)
                 .storageSize(0f)

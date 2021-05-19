@@ -4,15 +4,12 @@ import luke.friendbook.account.model.VerificationToken;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.persistence.EntityManager;
-import javax.persistence.NoResultException;
-import javax.persistence.PersistenceContext;
-import javax.persistence.TypedQuery;
+import javax.persistence.*;
 import java.util.List;
 import java.util.Optional;
 
 @Repository
-public class RegistrationTokenRepository implements IRegistrationTokenRepository {
+public class VerificationTokenRepository implements IVerificationTokenRepository {
 
     @PersistenceContext
     private EntityManager entityManager;
@@ -77,5 +74,14 @@ public class RegistrationTokenRepository implements IRegistrationTokenRepository
             return true;
         }
         return false;
+    }
+
+    @Override
+    @Transactional
+    public void deleteByUserId(Long userId) {
+        final String sql = "DELETE FROM VerificationToken vt WHERE vt.user.userId = ?1";
+        Query query = entityManager.createQuery(sql)
+                .setParameter(1, userId);
+        query.executeUpdate();
     }
 }

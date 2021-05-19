@@ -34,7 +34,7 @@ public class MyResponseEntityExceptionHandler extends ResponseEntityExceptionHan
         Map<String, Object> map = new HashMap<>();
         map.put("timestamp", new Timestamp(System.currentTimeMillis()));
         map.put("status", status.value());
-        map.put("validationErrors", errorMessages);
+        map.put("message", errorMessages);
         map.put("statusName", status.toString());
         return new ResponseEntity<>(map, headers, status);
     }

@@ -1,10 +1,9 @@
 package luke.friendbook.mainFeed;
 
-import luke.friendbook.exception.model.ArgumentNotValidException;
-import luke.friendbook.mainFeed.services.IFeedCommentService;
-import luke.friendbook.model.Chunk;
 import luke.friendbook.mainFeed.model.FeedModelDto;
+import luke.friendbook.mainFeed.services.IFeedCommentService;
 import luke.friendbook.mainFeed.services.IFeedService;
+import luke.friendbook.model.Chunk;
 import luke.friendbook.storage.model.DirectoryType;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;

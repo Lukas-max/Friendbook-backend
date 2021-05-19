@@ -57,7 +57,7 @@ public class AccountController{
         return ResponseEntity.ok().body(savedUser);
     }
 
-    @PostMapping("/confirm-account")
+    @PatchMapping("/confirm-account")
     public void confirmAccount(@RequestBody String tokenUUID) {
         accountService.confirmRegistration(tokenUUID);
     }

@@ -9,9 +9,7 @@ import lombok.NoArgsConstructor;
 import javax.persistence.*;
 import java.io.Serializable;
 import java.time.LocalDateTime;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 
 @Entity
 @Table(name = "users")
@@ -59,7 +57,7 @@ public class User implements Serializable {
             joinColumns = @JoinColumn(name = "user_id"),
             inverseJoinColumns = @JoinColumn(name = "role_id"))
     @JsonIgnore
-    private Set<Role> roles = new HashSet<>();
+    private List<Role> roles = new ArrayList<>();
 
 
     public User(User user) {
@@ -73,7 +71,7 @@ public class User implements Serializable {
         this.isLogged = user.isLogged;
         this.storageSize = user.storageSize;
         this.accountCreatedTime = user.accountCreatedTime;
-        this.roles = new HashSet<>(user.getRoles());
+        this.roles = new ArrayList<>(user.getRoles());
     }
 
     public void generateUUID() {

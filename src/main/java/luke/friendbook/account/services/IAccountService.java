@@ -22,4 +22,6 @@ public interface IAccountService {
     void changeEmail(String email);
 
     void deleteAccount();
+
+    void deleteAccountById(Long id);
 }

@@ -227,6 +227,36 @@ public class AccountService implements IAccountService {
         sendDeletedUserByWebsocket(user);
     }
 
+    /**
+     * Refactor in the future.    DRY
+     */
+    @Override
+    public void deleteAccountById(Long id) {
+        User user = userRepository.findById(id).orElseThrow(() ->
+                new NotFoundException("Nie znaleziono użytkownika którego chcesz usunąć"));
+
+        publicChatRepository.deleteAllByUser(user.getUserUUID());
+        privateChatRepository.deleteMessagesBySenderUUID(user.getUserUUID());
+        feedCommentRepository.deleteCommentsByUser(user.getUserUUID());
+        fileStorage.deleteUserData(user);
+        feedRepository
+                .findAllByUser(user.getUserId())
+                .forEach(feedModel -> {
+                    feedRepository.deleteFeed(feedModel);
+                    String feedId = feedModel.getId().toString();
+
+                    if (feedModel.getFiles())
+                        feedStorage.deleteFeedFiles(feedId);
+
+                    if (feedModel.getImages())
+                        feedStorage.deleteFeedImages(feedId);
+                });
+
+        verificationTokenRepository.deleteByUserId(user.getUserId());
+        userRepository.deleteById(user.getUserId());
+        sendDeletedUserByWebsocket(user);
+    }
+
     private VerificationToken createVerificationToken(User user) {
         VerificationToken verificationToken = new VerificationToken(user);
         verificationToken.setUser(user);

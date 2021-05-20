@@ -1,5 +1,6 @@
 package luke.friendbook.utilities;
 
+import luke.friendbook.model.DefaultProfile;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.cors.CorsConfiguration;
@@ -11,6 +12,7 @@ import java.util.Arrays;
 import java.util.List;
 
 @Configuration
+@DefaultProfile
 public class CorsConfig implements WebMvcConfigurer {
 
 

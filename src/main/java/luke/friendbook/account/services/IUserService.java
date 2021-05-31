@@ -7,7 +7,7 @@ import java.util.List;
 
 public interface IUserService {
 
-    List<UserResponseModel> getAllUsers();
+    List<UserResponseModel> getActiveUsers();
 
     User getUserByUUID(String uuid);
 

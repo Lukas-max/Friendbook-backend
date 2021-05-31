@@ -143,6 +143,7 @@ public class AccountService implements IAccountService {
         userRepository.save(user);
         verificationTokenRepository.save(verificationToken);
         fileStorage.createRegisteredUserStorageDirectory(user);
+        messageTemplate.convertAndSend("/topic/created-user", true);
     }
 
     @Override

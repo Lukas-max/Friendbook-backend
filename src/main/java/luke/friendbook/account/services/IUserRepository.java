@@ -8,6 +8,8 @@ import java.util.Optional;
 
 public interface IUserRepository extends Repository<User> {
 
+    List<User> findActiveUsers();
+
     List<User> findByUsername(String username);
 
     Optional<User> findByEmail(String email);

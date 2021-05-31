@@ -32,6 +32,15 @@ public class UserRepository implements IUserRepository, UserDetailsService {
     }
 
     @Override
+    public List<User> findActiveUsers() {
+        final String query = "SELECT u FROM User u WHERE u.isActive = ?1 AND u.isLocked = ?2 ORDER BY u.username";
+        TypedQuery<User> userTypedQuery = entityManager.createQuery(query, User.class)
+                .setParameter(1, true)
+                .setParameter(2, false);
+        return userTypedQuery.getResultList();
+    }
+
+    @Override
     public Optional<User> findById(Long userId) {
         User user = entityManager.find(User.class, userId);
         if (user == null)

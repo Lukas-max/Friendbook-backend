@@ -21,8 +21,8 @@ public class UserController {
     }
 
     @GetMapping
-    public ResponseEntity<List<UserResponseModel>> getUsers() {
-        return ResponseEntity.ok(userService.getAllUsers());
+    public ResponseEntity<List<UserResponseModel>> getActiveUsers() {
+        return ResponseEntity.ok(userService.getActiveUsers());
     }
 
     @GetMapping("/{uuid}")

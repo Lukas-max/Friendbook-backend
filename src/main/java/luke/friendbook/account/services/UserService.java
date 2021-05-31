@@ -20,7 +20,7 @@ public class UserService implements IUserService {
     }
 
     @Override
-    public List<UserResponseModel> getAllUsers() {
+    public List<UserResponseModel> getActiveUsers() {
         List<User> users = userRepository.findAll();
         users.forEach(user -> user.setPassword("SECRET"));
         Type type = new TypeToken<List<UserResponseModel>>(){}.getType();
